@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Integrado FABLAB - UEB</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        /* ================= ESTILOS GLOBALES ================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #f4f5f7; color: #172b4d; overflow: hidden; } 
+        .wrapper { width: 100vw; height: 100vh; display: none; }
+
+        /* ================= PANTALLA DE INGRESO (LOGIN) ================= */
+        #login-wrapper { display: flex; justify-content: center; align-items: center; background: white; }
+        .login-box { width: 100%; max-width: 400px; text-align: center; padding: 40px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px; }
+        .login-box img { height: 100px; object-fit: contain; margin-bottom: 25px; }
+        .login-box input { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #dfe1e6; border-radius: 8px; font-size: 15px; }
+        .login-box button { width: 100%; background: #1a365d; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .login-box button:hover { background: #2c5282; }
+
+        /* ================= INTERFAZ VOLUNTARIO (MOBILE-FIRST) ================= */
+        #user-wrapper { overflow-y: auto; flex-direction: column; align-items: center; padding: 20px 10px; background-color: #f4f7f6; }
+        .u-container { width: 100%; max-width: 400px; margin: 0 auto; }
+        
+        .u-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .u-header h2 { font-size: 18px; color: #1a365d; }
+        .u-header p { font-size: 13px; color: #718096; }
+        .u-logo { height: 50px; object-fit: contain; }
+
+        #u-view-dash, #u-view-tasks { width: 100%; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .u-time-card { background: white; border-radius: 12px; padding: 25px 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        #u-clock { font-size: 44px; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+        #u-date { color: #718096; font-size: 15px; }
+        .u-badge { display: inline-block; margin-top: 15px; padding: 6px 12px; background: #edf2f7; color: #4a5568; border-radius: 20px; font-size: 13px; font-weight: bold; }
+        
+        .u-task-box { margin-top: 20px; background: #ebf8fa; border-left: 5px solid #319795; padding: 15px; border-radius: 8px; text-align: left; }
+        .u-task-box h4 { color: #1a365d; margin-bottom: 5px; font-size: 13px; text-transform: uppercase; }
+        .u-task-box p { color: #2d3748; font-weight: 600; font-size: 15px; }
+
+        .u-btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; }
+        .u-btn-green { background: #38a169; box-shadow: 0 4px 10px rgba(56,161,105,0.3); }
+        .u-btn-red { background: #e53e3e; box-shadow: 0 4px 10px rgba(229,62,62,0.3); }
+        .u-btn-gray { background: #4a5568; box-shadow: 0 4px 10px rgba(74,85,104,0.3); }
+        .u-btn-outline { background: transparent; border: 2px solid #e2e8f0; color: #4a5568; margin-top: 20px; }
+        .u-btn:disabled { background: #cbd5e0; box-shadow: none; cursor: not-allowed; color: #a0aec0; }
+
+        .u-pending-list { list-style: none; }
+        .u-pending-list li { background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #d69e2e; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .u-pending-list h5 { color: #2d3748; font-size: 15px; margin-bottom: 5px; }
+        .u-pending-list p { font-size: 13px; color: #718096; margin-bottom: 10px; }
+        .u-empty-task { text-align: center; padding: 30px; color: #a0aec0; font-style: italic; background: white; border-radius: 8px; border: 1px dashed #cbd5e0; }
+
+        .u-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: flex-end; z-index: 1000; }
+        .u-modal-content { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 20px 20px 0 0; }
+        .u-validation { background: #f7fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .u-radio-group label { display: flex; align-items: center; font-size: 14px; color: #4a5568; margin-bottom: 8px; }
+        .u-radio-group input { margin-right: 10px; transform: scale(1.2); }
+        .u-modal textarea { width: 100%; height: 70px; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; resize: none; margin-bottom: 15px; }
+        .u-camera-btn { display: flex; justify-content: center; align-items: center; width: 100%; padding: 15px; background: #edf2f7; border: 2px dashed #cbd5e0; border-radius: 8px; color: #4a5568; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
+        .u-modal input[type="file"] { display: none; }
+
+        /* ================= INTERFAZ ADMINISTRADOR (DESKTOP GRID) ================= */
+        #admin-wrapper { display: none; flex-direction: column; overflow: hidden; background: #f4f5f7; }
+        
+        .a-navbar { background: #1a365d; color: white; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; }
+        .a-navbar img { height: 45px; background: white; padding: 2px; border-radius: 4px; }
+        .a-search-bar { display: flex; width: 400px; }
+        .a-search-bar input { width: 100%; padding: 10px; border: none; border-radius: 4px 0 0 4px; outline: none; }
+        .a-search-bar button { padding: 10px 20px; background: #c53030; color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer; font-weight: bold; }
+        .a-nav-btn { background: transparent; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .a-nav-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .a-dashboard { display: none; grid-template-columns: 450px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 70px); }
+        .a-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(9,30,66,0.13); display: flex; flex-direction: column; overflow: hidden; }
+        .a-card-header { padding: 15px; border-bottom: 1px solid #dfe1e6; font-weight: bold; background: #fdfdfd; display: flex; justify-content: space-between; align-items: center; }
+        
+        .a-col-left { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        .a-vol-list { list-style: none; padding: 15px; overflow-y: auto; }
+        .a-vol-list li { border-bottom: 1px solid #f4f5f7; padding: 10px 0; }
+        .a-num-badge { display: inline-flex; width: 20px; height: 20px; background: #c53030; color: white; border-radius: 50%; justify-content: center; align-items: center; font-size: 12px; margin-right: 5px; }
+        #a-map, #a-search-map { width: 100%; height: 100%; min-height: 250px; }
+
+        .a-col-right { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        .a-table-wrap { overflow-y: auto; flex-grow: 1; }
+        .a-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .a-table th { position: sticky; top: 0; background: white; padding: 12px; border-bottom: 2px solid #dfe1e6; text-align: left; color: #5e6c84; }
+        .a-table td { padding: 10px 12px; border-bottom: 1px solid #ebecf0; vertical-align: top; }
+        
+        .a-clean-select { border: none; outline: none; background: transparent; cursor: pointer; color: #172b4d; }
+        .a-tag { color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; }
+        .a-btn-add { background: #f4f5f7; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        
+        /* Botones de Edición y Publicación */
+        .a-btn-icon { background:transparent; border:none; cursor:pointer; font-size:16px; margin:0 2px; }
+        
+        /* Formulario Nuevo Usuario */
+        .nu-input { padding:12px; border:2px solid #dfe1e6; border-radius:8px; width:100%; font-size:14px; outline:none; margin-bottom: 15px;}
+        .nu-input:focus { border-color:#1a365d; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-wrapper" class="wrapper" style="display: flex;">
+        <div class="login-box">
+            <img src="logofablabUEB-removebg-preview.png" alt="Logo UEB">
+            <h2 style="color: #1a365d; margin-bottom: 20px;">INICIO</h2>
+            <!-- CAMPOS LIMPIOS -->
+            <input type="email" id="login-email" placeholder="Correo Institucional">
+            <input type="password" id="login-pass" placeholder="Registro / Contraseña">
+            <button onclick="iniciarSesion()">Ingresar</button>
+            <p id="login-error" style="color:red; display:none; margin-top:15px; font-weight:bold;">Credenciales incorrectas.</p>
+            <!-- Nota dejada intencionalmente para pruebas de acceso al panel -->
+            <p style="margin-top: 15px; font-size: 12px; color: #718096;">Admin temporal: lab.tecnologia@ueb.edu.bo / 123456789</p>
+        </div>
+    </div>
+
+    <div id="user-wrapper" class="wrapper">
+        <div class="u-container">
+            
+            <header class="u-header">
+                <div class="user-info">
+                    <h2 id="u-display-name">Hola, Usuario</h2>
+                    <p>Perfil: Voluntario RSU</p>
+                </div>
+                <img src="logofablabUEB-removebg-preview.png" class="u-logo" alt="Logo">
+            </header>
+
+            <div id="u-view-dash">
+                <div class="u-time-card">
+                    <div id="u-clock">00:00:00</div>
+                    <div id="u-date">Cargando fecha...</div>
+                    <div class="u-badge" id="u-badge-estado">🔴 Fuera de turno</div>
+                    
+                    <div class="u-task-box">
+                        <h4>📌 Tarea Asignada</h4>
+                        <p id="u-assigned-main">Sin asignar</p>
+                    </div>
+                </div>
+
+                <button class="u-btn u-btn-green" id="u-btn-ingreso" onclick="uMarcarIngreso()">Marcar Ingreso</button>
+                <button class="u-btn u-btn-gray" onclick="uShowTasks()">Ver Tareas Pendientes</button>
+                <button class="u-btn u-btn-red" id="u-btn-salida" onclick="document.getElementById('u-modal-evidencia').style.display='flex'" disabled>Marcar Salida</button>
+                
+                <button class="u-btn u-btn-outline" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+
+            <div id="u-view-tasks" style="display: none;">
+                <h2 style="color:#1a365d; margin-bottom: 20px;">Registro de Tareas</h2>
+                
+                <div class="u-task-box" style="margin-bottom: 25px;">
+                    <h4>📌 Tarea Asignada Principal</h4>
+                    <p id="u-assigned-secondary">Sin asignar</p>
+                </div>
+
+                <h4 style="color:#1a365d; margin-bottom: 10px;">⏳ Tareas Pendientes</h4>
+                <ul class="u-pending-list" id="u-pending-container">
+                    <!-- Dinámico -->
+                </ul>
+
+                <button class="u-btn u-btn-gray" style="margin-top: 30px;" onclick="uShowDash()">Volver al Inicio</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="u-modal" id="u-modal-evidencia">
+        <div class="u-modal-content">
+            <h3 style="margin-bottom:15px; color:#2d3748;">Evidencia de Salida</h3>
+            
+            <div class="u-validation">
+                <p>¿Terminaste la tarea asignada? <span style="color: red;">*</span></p>
+                <div class="u-radio-group">
+                    <label><input type="radio" name="tarea_est" value="si"> Sí, tarea finalizada</label>
+                    <label><input type="radio" name="tarea_est" value="no"> No, no pude terminarla</label>
+                </div>
+            </div>
+
+            <textarea id="u-task-desc" placeholder="Describe actividades extra (Opcional)..."></textarea>
+            
+            <label for="u-camera-input" class="u-camera-btn">📷 Tomar Fotografía (Obligatorio)</label>
+            <input type="file" id="u-camera-input" accept="image/*" capture="environment">
+
+            <button class="u-btn u-btn-red" style="margin-bottom: 5px;" onclick="uValidarYSalir()">Confirmar Salida</button>
+            <button style="width: 100%; background: none; border: none; color: #718096; padding:10px; cursor: pointer;" onclick="document.getElementById('u-modal-evidencia').style.display='none'">Cancelar</button>
+        </div>
+    </div>
+
+
+    <div id="admin-wrapper" class="wrapper">
+        
+        <header class="a-navbar">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <img src="logofablabUEB-removebg-preview.png" alt="Logo">
+                <h2>Centro de Comando</h2>
+            </div>
+            <div class="a-search-bar">
+                <input type="text" id="a-search-input" placeholder="Buscar Registro o Nombre">
+                <button onclick="aBuscar()">Buscar</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="a-nav-btn" id="a-dynamic-btn" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+                <button class="a-nav-btn" onclick="openNewUser()" style="font-weight:bold; font-size:18px; display:flex; align-items:center; padding: 0 15px;" title="Añadir Nuevo Usuario">+</button>
+            </div>
+        </header>
+
+        <div class="a-dashboard" id="a-view-home">
+            <div class="a-col-left">
+                <div class="a-card" style="flex: 0 0 auto;">
+                    <!-- LIMPIADO: Contador de activos se actualizará desde BD -->
+                    <div class="a-card-header">Monitoreo</div>
+                    <ul class="a-vol-list">
+                        <!-- Llenado dinámico desde BD -->
+                    </ul>
+                </div>
+                <div class="a-card" style="flex: 1;">
+                    <div class="a-card-header">GPS en vivo (Leaflet)</div>
+                    <div id="a-map"></div>
+                </div>
+            </div>
+
+            <div class="a-col-right">
+                <div class="a-card" style="flex: 2;">
+                    <div class="a-card-header">Tabla Principal de Tareas <button class="a-btn-add" onclick="aAddTarea()">+ Nueva Tarea</button></div>
+                    <div class="a-table-wrap">
+                        <table class="a-table">
+                            <thead><tr><th width="35%">Nombre</th><th width="30%">Asignados (Múltiple)</th><th>Estado</th><th>Etiquetas</th><th>X</th></tr></thead>
+                            <tbody id="a-tbody-main">
+                                <!-- Llenado dinámico desde BD -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="a-card" style="flex: 1;">
+                    <div class="a-card-header">Tareas Pendientes</div>
+                    <div class="a-table-wrap">
+                        <table class="a-table">
+                            <thead><tr><th>Tarea</th><th>Asignado</th><th>Fecha</th><th>Hora</th><th>Entrega</th></tr></thead>
+                            <tbody>
+                                <!-- Llenado dinámico desde BD -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="a-dashboard" id="a-view-search">
+            <div class="a-col-left">
+                <div class="a-card" style="flex: 0 0 auto;">
+                    <div class="a-card-header">Ficha de Usuario</div>
+                    <div style="padding:20px;">
+                        <h2 id="a-s-nombre">Nombre</h2>
+                        <p style="color:#5e6c84; margin-bottom:15px;">Registro: <b id="a-s-reg">000</b></p>
+                        <button style="width:100%; padding:15px; background:#36b37e; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="alert('Llamando...')">📞 LLAMAR AL VOLUNTARIO</button>
+                    </div>
+                </div>
+                <div class="a-card" style="flex: 1;">
+                    <div class="a-card-header">Última Ubicación</div>
+                    <div id="a-search-map"></div>
+                </div>
+            </div>
+
+            <div class="a-col-right">
+                <div class="a-card" style="flex: 1;">
+                    <div class="a-card-header">
+                        <span>HISTORIAL DE HORAS</span>
+                        <span id="a-s-total-horas" style="color: #c53030; font-weight: bold; font-size: 15px;">Total horas: 0</span>
+                    </div>
+                    <div class="a-table-wrap">
+                        <table class="a-table">
+                            <thead><tr><th>Fecha</th><th>Ingreso</th><th>Salida</th><th>Total Horas</th><th>Tarea Realizada</th></tr></thead>
+                            <tbody id="a-s-historial"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="a-dashboard" id="a-view-new-user" style="display:none; justify-content:center; align-items:flex-start; overflow-y: auto;">
+            <div class="a-card" style="width: 100%; max-width: 600px; margin-top: 20px;">
+                <div class="a-card-header">NUEVO USUARIO (Registro Simulado)</div>
+                <div style="padding: 20px;">
+                    <input type="text" id="nu-nom" placeholder="Nombre Completo" class="nu-input">
+                    <label style="color:#5e6c84; font-size:13px; display:block; margin-bottom:5px;">Fecha de nacimiento:</label>
+                    <input type="date" id="nu-fec" class="nu-input">
+                    <input type="tel" id="nu-tel" placeholder="Número de Teléfono" class="nu-input">
+                    <input type="text" id="nu-car" placeholder="Carrera" class="nu-input">
+                    <input type="number" id="nu-reg" placeholder="Registro" class="nu-input">
+                    <input type="email" id="nu-cor" placeholder="Correo Institucional" class="nu-input">
+                    
+                    <button class="u-btn u-btn-green" style="margin-top: 10px;" onclick="saveNewUser()">Guardar / Crear</button>
+
+                    <div id="nu-result" style="display:none; background:#c6f6d5; color:#22543d; padding:15px; border-radius:8px; margin-top:15px; text-align:center;">
+                        <b style="font-size: 16px;">¡Usuario Creado Exitosamente!</b><br><br>
+                        Usuario (Registro): <b id="nu-res-usr"></b><br>
+                        Contraseña (Correo): <b id="nu-res-pwd"></b>
+                    </div>
+
+                    <button class="a-nav-btn" style="color:#1a365d; border: 2px solid #1a365d; width:100%; padding:15px; margin-top:20px;" onclick="aVolverInicio()">Volver al Inicio</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. BASE DE DATOS UNIFICADA (Vaciada para Producción) ---
+        const USERS = {};
+        const ADMIN_DB = [];
+
+        // --- 2. LOGIN Y ENRUTAMIENTO ---
+        function iniciarSesion() {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            const err = document.getElementById('login-error');
+
+            if (email === 'lab.tecnologia@ueb.edu.bo' && pass === '123456789') {
+                err.style.display = 'none';
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('admin-wrapper').style.display = 'flex';
+                document.getElementById('a-view-home').style.display = 'grid';
+                aInitMap(); aInitTareas();
+            } else if (USERS[pass] && email !== '') {
+                err.style.display = 'none';
+                uSetupProfile(USERS[pass]);
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('user-wrapper').style.display = 'flex';
+                uShowDash();
+            } else {
+                err.style.display = 'block';
+            }
+        }
+
+        function cerrarSesion() {
+            document.getElementById('user-wrapper').style.display = 'none';
+            document.getElementById('admin-wrapper').style.display = 'none';
+            document.getElementById('login-wrapper').style.display = 'flex';
+            document.getElementById('login-pass').value = '';
+            document.getElementById('login-email').value = '';
+        }
+
+        // --- 3. LÓGICA VOLUNTARIO ---
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('u-clock').textContent = now.toLocaleTimeString('es-ES', {hour12:false});
+            document.getElementById('u-date').textContent = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }, 1000);
+
+        function uSetupProfile(user) {
+            document.getElementById('u-display-name').innerText = "Hola, " + user.nom.split(" ")[0];
+            document.getElementById('u-assigned-main').innerText = user.task;
+            document.getElementById('u-assigned-secondary').innerText = user.task;
+
+            const pendingContainer = document.getElementById('u-pending-container');
+            pendingContainer.innerHTML = '';
+            
+            if (user.pending && user.pending.length > 0) {
+                user.pending.forEach(p => {
+                    pendingContainer.innerHTML += `
+                        <li>
+                            <h5>${p.t}</h5><p>📅 ${p.d} | ⏰ ${p.h}</p>
+                            <button class="u-btn u-btn-green" style="padding: 8px; font-size: 13px; margin-top: 5px; margin-bottom: 0;" onclick="uReanudarTarea('${p.t}')">Reanudar tarea</button>
+                        </li>`;
+                });
+            } else {
+                pendingContainer.innerHTML = `<div class="u-empty-task">Sin tarea pendiente</div>`;
+            }
+        }
+
+        function uReanudarTarea(tareaNombre) {
+            document.getElementById('u-assigned-main').innerText = tareaNombre;
+            document.getElementById('u-assigned-secondary').innerText = tareaNombre;
+            uShowDash();
+        }
+
+        function uShowDash() {
+            document.getElementById('u-view-tasks').style.display = 'none';
+            document.getElementById('u-view-dash').style.display = 'block';
+        }
+
+        function uShowTasks() {
+            document.getElementById('u-view-dash').style.display = 'none';
+            document.getElementById('u-view-tasks').style.display = 'block';
+        }
+
+        function uMarcarIngreso() {
+            document.getElementById('u-btn-ingreso').disabled = true;
+            document.getElementById('u-btn-salida').disabled = false;
+            const b = document.getElementById('u-badge-estado');
+            b.textContent = '🟢 Turno Activo'; b.style.background = '#c6f6d5'; b.style.color = '#22543d';
+        }
+
+        function uValidarYSalir() {
+            const radio = document.querySelector('input[name="tarea_est"]:checked');
+            const file = document.getElementById('u-camera-input').value;
+            
+            if (!radio) { alert("¡Obligatorio! Debes indicar si terminaste o no la tarea asignada."); return; }
+            if (!file) {
+                alert("No se detecto Pruebas del Turno de hoy, No se Contara en el Registro las horas de hoy comuniquese con su supervisor");
+            } else {
+                alert("Salida registrada correctamente.");
+            }
+            
+            document.getElementById('u-modal-evidencia').style.display = 'none';
+            document.getElementById('u-btn-salida').disabled = true;
+            const b = document.getElementById('u-badge-estado');
+            b.textContent = '🔴 Fuera de turno'; b.style.background = '#edf2f7'; b.style.color = '#4a5568';
+            document.querySelectorAll('input[name="tarea_est"]').forEach(r => r.checked = false);
+            document.getElementById('u-task-desc').value = ''; document.getElementById('u-camera-input').value = '';
+        }
+
+
+        // --- 4. LÓGICA ADMINISTRADOR ---
+        let map, sMap, sMarker;
+
+        function aInitMap() {
+            if(map) return;
+            setTimeout(() => {
+                map = L.map('a-map', {zoomControl: false}).setView([-17.835, -63.2045], 16);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                ADMIN_DB.forEach(v => {
+                    let ic = L.divIcon({ className:'c-icon', html:`<div style="background:#c53030;color:white;width:20px;height:20px;border-radius:50%;text-align:center;font-weight:bold;line-height:20px;">${v.num}</div>`, iconSize:[20,20] });
+                    L.marker([v.lat, v.lng], {icon: ic}).addTo(map).bindPopup(v.nom);
+                });
+            }, 100);
+        }
+
+        function aInitTareas() {
+            const tb = document.getElementById('a-tbody-main');
+            // Las tareas se inyectarán desde la Base de Datos aquí.
+            tb.innerHTML = ''; 
+        }
+
+        function aAddTarea() {
+            document.getElementById('a-tbody-main').insertAdjacentHTML('afterbegin', aGenRow("Nueva Tarea (Editable)", [], "En progreso", "", true));
+        }
+
+        function aGenRow(n, arrAsignados, e, tags, isNew = false) {
+            let editDisp = isNew ? "none" : "inline-block";
+            let pubDisp = isNew ? "inline-block" : "none";
+            let contentEd = isNew ? "true" : "false";
+            let bBorder = isNew ? "1px dashed #c53030" : "none";
+
+            // Multi-select vacío por defecto
+            let checks = `
+                <div style="max-height: 60px; overflow-y:auto; border:1px solid #dfe1e6; border-radius:4px; padding:2px;">
+                    <!-- Los checkboxes de usuarios se inyectarán desde BD -->
+                </div>
+            `;
+
+            return `<tr>
+                <td contenteditable="${contentEd}" style="outline:none; border-bottom:${bBorder};">${n}</td>
+                <td>${checks}</td>
+                <td><select class="a-clean-select" style="color:${e==='Terminado'?'#36b37e':'#ff991f'};font-weight:bold;"><option>En progreso</option><option ${e==='Terminado'?'selected':''}>Terminado</option></select></td>
+                <td><div style="display:flex;align-items:center;">${tags}<button class="a-btn-add" onclick="aAddTag(this)">+</button></div></td>
+                <td style="white-space: nowrap;">
+                    <button class="a-btn-icon btn-edit" style="display:${editDisp};" title="Editar" onclick="editTask(this)">✏️</button>
+                    <button class="a-btn-icon btn-pub" style="display:${pubDisp};" title="Publicar" onclick="pubTask(this)">📤</button>
+                    <button style="border:none;background:none;color:red;cursor:pointer;font-weight:bold;margin-left:5px;" onclick="this.closest('tr').remove()">X</button>
+                </td>
+            </tr>`;
+        }
+
+        function editTask(btn) {
+            let tr = btn.closest('tr');
+            tr.querySelector('td:nth-child(1)').contentEditable = "true";
+            tr.querySelector('td:nth-child(1)').style.borderBottom = "1px dashed #c53030";
+            btn.style.display = "none";
+            tr.querySelector('.btn-pub').style.display = "inline-block";
+        }
+
+        function pubTask(btn) {
+            let tr = btn.closest('tr');
+            tr.querySelector('td:nth-child(1)').contentEditable = "false";
+            tr.querySelector('td:nth-child(1)').style.borderBottom = "none";
+            btn.style.display = "none";
+            tr.querySelector('.btn-edit').style.display = "inline-block";
+            alert("Tarea publicada con éxito");
+        }
+
+        function aAddTag(btn) {
+            let t = prompt("Etiqueta:");
+            if(t) btn.insertAdjacentHTML('beforebegin', `<span class="a-tag" style="background:#319795">${t}</span>`);
+        }
+
+        // Búsqueda en Admin y cálculo de horas totales
+        function aBuscar() {
+            const q = document.getElementById('a-search-input').value.toLowerCase();
+            const u = ADMIN_DB.find(x => x.reg.includes(q) || x.nom.toLowerCase().includes(q));
+            if(!u) return alert("Usuario no encontrado o Base de Datos vacía.");
+
+            document.getElementById('a-view-home').style.display = 'none';
+            document.getElementById('a-view-new-user').style.display = 'none';
+            document.getElementById('a-view-search').style.display = 'grid';
+            
+            const btnDynamic = document.getElementById('a-dynamic-btn');
+            btnDynamic.innerHTML = "🏠 Volver a Inicio";
+            btnDynamic.onclick = aVolverInicio;
+            
+            document.getElementById('a-s-nombre').innerText = u.nom;
+            document.getElementById('a-s-reg').innerText = u.reg;
+            
+            const tbody = document.getElementById('a-s-historial');
+            let totalHoras = 0;
+
+            tbody.innerHTML = u.hist.map(r => {
+                if(r.h !== "-" && !isNaN(r.h)) {
+                    totalHoras += parseInt(r.h);
+                }
+                return `<tr><td>${r.f}</td><td>${r.in}</td><td>${r.out}</td><td><span style="background:#1a365d;color:white;padding:3px 6px;border-radius:4px;">${r.h}</span></td><td>${r.t}</td></tr>`;
+            }).join('');
+
+            document.getElementById('a-s-total-horas').innerText = `Total horas: ${totalHoras}`;
+
+            setTimeout(() => {
+                if(!sMap) {
+                    sMap = L.map('a-search-map', {zoomControl: false}).setView([u.lat, u.lng], 17);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(sMap);
+                    sMarker = L.marker([u.lat, u.lng]).addTo(sMap);
+                } else {
+                    sMap.setView([u.lat, u.lng], 17);
+                    sMarker.setLatLng([u.lat, u.lng]);
+                    sMap.invalidateSize();
+                }
+            }, 100);
+        }
+
+        function aVolverInicio() {
+            document.getElementById('a-search-input').value = '';
+            document.getElementById('a-view-search').style.display = 'none';
+            document.getElementById('a-view-new-user').style.display = 'none';
+            document.getElementById('a-view-home').style.display = 'grid';
+            
+            const btnDynamic = document.getElementById('a-dynamic-btn');
+            btnDynamic.innerHTML = "🚪 Cerrar Sesión";
+            btnDynamic.onclick = cerrarSesion;
+
+            if(map) setTimeout(() => map.invalidateSize(), 100);
+        }
+
+        // --- 5. LÓGICA DE NUEVO USUARIO ---
+        function openNewUser() {
+            document.getElementById('a-view-home').style.display = 'none';
+            document.getElementById('a-view-search').style.display = 'none';
+            document.getElementById('a-view-new-user').style.display = 'flex';
+            document.getElementById('nu-result').style.display = 'none';
+
+            let btnDyn = document.getElementById('a-dynamic-btn');
+            btnDyn.innerHTML = "🏠 Volver a Inicio";
+            btnDyn.onclick = aVolverInicio;
+        }
+
+        function saveNewUser() {
+            let nom = document.getElementById('nu-nom').value.trim();
+            let reg = document.getElementById('nu-reg').value.trim();
+            let cor = document.getElementById('nu-cor').value.trim();
+
+            if(!nom || !reg || !cor) {
+                alert("Por favor, llene al menos el Nombre, Registro y Correo Institucional.");
+                return;
+            }
+
+            document.getElementById('nu-res-usr').innerText = reg;
+            document.getElementById('nu-res-pwd').innerText = cor;
+            document.getElementById('nu-result').style.display = 'block';
+
+            USERS[reg] = { nom: nom, task: "Sin asignar", pending: [] };
+            ADMIN_DB.push({
+                reg: reg, nom: nom, lat: -17.835, lng: -63.204, num: ADMIN_DB.length + 1, hist: []
+            });
+
+            document.getElementById('nu-nom').value = "";
+            document.getElementById('nu-fec').value = "";
+            document.getElementById('nu-tel').value = "";
+            document.getElementById('nu-car').value = "";
+            document.getElementById('nu-reg').value = "";
+            document.getElementById('nu-cor').value = "";
+        }
+    </script>
+</body>
+</html>
