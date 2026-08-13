@@ -23,7 +23,7 @@
         .login-box button { width: 100%; background: #1a365d; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
         .login-box button:hover { background: #2c5282; }
 
-        /* ================= INTERFAZ VOLUNTARIO (MANTENIDA COMO SOLICITASTE) ================= */
+        /* ================= INTERFAZ VOLUNTARIO ================= */
         #user-wrapper { overflow-y: auto; flex-direction: column; align-items: center; padding: 20px 10px; background-color: #f4f7f6; }
         .u-container { width: 100%; max-width: 400px; margin: 0 auto; }
         .u-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -38,10 +38,8 @@
         .u-btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; }
         .u-btn-green { background: #38a169; } .u-btn-red { background: #e53e3e; } .u-btn-gray { background: #4a5568; } .u-btn-outline { background: transparent; border: 2px solid #e2e8f0; color: #4a5568; }
 
-        /* ================= INTERFAZ ADMINISTRADOR (NUEVA ESTRUCTURA ADAPTABLE) ================= */
+        /* ================= INTERFAZ ADMINISTRADOR ================= */
         #admin-wrapper { display: flex; flex-direction: row; background: #f4f5f7; }
-        
-        /* Sidebar Menu */
         .a-sidebar { width: 250px; background: #1a365d; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; }
         .a-sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .a-sidebar-header img { height: 50px; background: white; padding: 5px; border-radius: 8px; margin-bottom: 10px; }
@@ -50,31 +48,22 @@
         .a-menu li:hover, .a-menu li.active { background: #2c5282; border-left: 4px solid #4299e1; }
         .a-logout { padding: 15px 20px; background: #c53030; text-align: center; cursor: pointer; font-weight: bold; }
         
-        /* Main Content Area */
         .a-main { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
         .a-header-mobile { display: none; background: #1a365d; color: white; padding: 15px; justify-content: space-between; align-items: center; }
         .a-content { flex-grow: 1; overflow-y: auto; padding: 20px; }
         
-        /* Tarjetas y Contenedores */
         .card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
         .card-title { font-size: 18px; color: #1a365d; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; }
         
-        /* Buscadores */
         .search-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .search-bar input { flex-grow: 1; min-width: 200px; padding: 10px; border: 1px solid #dfe1e6; border-radius: 6px; }
         .search-bar button { padding: 10px 20px; background: #319795; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* Tablas Adaptables */
         .table-responsive { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 700px; }
         th { background: #edf2f7; padding: 12px; text-align: left; color: #4a5568; }
         td { padding: 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-        .rank-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; }
-        .bg-becario { background: #d69e2e; }
-        .bg-voluntario { background: #38a169; }
-        .photo-btn { background: #4a5568; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
-        /* Formulario Crear Usuario (Grid) */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; color: #4a5568; margin-bottom: 5px; font-weight: 600; }
@@ -82,7 +71,6 @@
         
         #mapa-container { width: 100%; height: 60vh; border-radius: 8px; border: 1px solid #dfe1e6; }
 
-        /* Responsividad Móvil */
         @media (max-width: 768px) {
             .a-sidebar { position: fixed; left: -250px; height: 100%; z-index: 1000; }
             .a-sidebar.open { left: 0; }
@@ -98,20 +86,19 @@
             <img src="logofablabUEB-removebg-preview.png" alt="Logo UEB">
             <h2 style="color: #1a365d; margin-bottom: 20px;">INICIO DE SESIÓN</h2>
             <input type="email" id="login-email" placeholder="Correo Institucional">
-            <input type="password" id="login-pass" placeholder="Registro / Contraseña">
+            <input type="password" id="login-pass" placeholder="Registro Universitario / Contraseña">
             <button onclick="iniciarSesion()">Ingresar</button>
-            <p id="login-error" style="color:red; display:none; margin-top:15px; font-weight:bold;">Credenciales incorrectas.</p>
+            <p id="login-error" style="color:red; display:none; margin-top:15px; font-weight:bold;">Credenciales incorrectas o usuario no encontrado.</p>
         </div>
     </div>
 
-    <!-- ==================== INTERFAZ VOLUNTARIO ==================== -->
-    <!-- (Se mantiene la estructura original lista para conectarse a la BD) -->
+    <!-- ==================== INTERFAZ VOLUNTARIO / ESTUDIANTE ==================== -->
     <div id="user-wrapper" class="wrapper">
         <div class="u-container">
             <header class="u-header">
                 <div class="user-info">
                     <h2 id="u-display-name">Hola, Usuario</h2>
-                    <p id="u-display-rank">Perfil: Voluntario RSU</p>
+                    <p id="u-display-rank">Perfil: Estudiante</p>
                 </div>
                 <img src="logofablabUEB-removebg-preview.png" class="u-logo" alt="Logo">
             </header>
@@ -124,17 +111,14 @@
                     <p id="u-assigned-main">Sin asignar</p>
                 </div>
             </div>
-            <button class="u-btn u-btn-green" id="u-btn-ingreso" onclick="alert('Conexión a BD pendiente')">Marcar Ingreso</button>
-            <button class="u-btn u-btn-red" id="u-btn-salida" disabled>Marcar Salida</button>
+            <button class="u-btn u-btn-green" id="u-btn-ingreso" onclick="marcarIngresoBD()">Marcar Ingreso</button>
+            <button class="u-btn u-btn-red" id="u-btn-salida" onclick="marcarSalidaBD()" disabled>Marcar Salida</button>
             <button class="u-btn u-btn-outline" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
     </div>
 
-
     <!-- ==================== INTERFAZ ADMINISTRADOR ==================== -->
     <div id="admin-wrapper" class="wrapper">
-        
-        <!-- Menú Lateral -->
         <aside class="a-sidebar" id="sidebar">
             <div class="a-sidebar-header">
                 <img src="logofablabUEB-removebg-preview.png" alt="Logo">
@@ -151,44 +135,30 @@
             <div class="a-logout" onclick="cerrarSesion()">Salir del Sistema</div>
         </aside>
 
-        <!-- Área de Contenido Principal -->
         <main class="a-main">
-            <!-- Menú hamburguesa para celulares -->
             <div class="a-header-mobile">
                 <h3 id="mobile-title">Vista Rápida</h3>
                 <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="background:none; border:none; color:white; font-size:24px;">☰</button>
             </div>
 
             <div class="a-content">
-                
-                <!-- 1. VISTA RÁPIDA (Pantalla completa del día actual) -->
+                <!-- 1. VISTA RÁPIDA -->
                 <section id="vista-rapida" class="admin-view">
                     <div class="card">
-                        <h2 class="card-title">Resumen del Día (Se reinicia a media noche)</h2>
-                        
+                        <h2 class="card-title">Resumen del Día (Base de Datos PostgreSQL)</h2>
                         <h3 style="color:#d69e2e; margin: 15px 0 10px;">Becarios de Turno Activos</h3>
                         <div class="table-responsive">
                             <table>
-                                <thead>
-                                    <tr><th>Nombre</th><th>Tarea Asignada</th><th>Ocupación/Rol</th><th>Sector</th><th>Ingreso</th><th>Salida</th><th>Fotos</th></tr>
-                                </thead>
-                                <tbody id="tbody-becarios">
-                                    <!-- Datos inyectados desde la Base de Datos -->
-                                    <tr><td colspan="7" style="text-align:center; color:#718096;">Sin registros actuales...</td></tr>
-                                </tbody>
+                                <thead><tr><th>Nombre</th><th>Registro</th><th>Tarea Actual</th><th>Teléfono</th></tr></thead>
+                                <tbody id="tbody-becarios"><tr><td colspan="4" style="text-align:center;">Cargando...</td></tr></tbody>
                             </table>
                         </div>
 
                         <h3 style="color:#38a169; margin: 25px 0 10px;">Voluntarios RSU Activos</h3>
                         <div class="table-responsive">
                             <table>
-                                <thead>
-                                    <tr><th>Nombre</th><th>Tarea Asignada</th><th>Ocupación/Rol</th><th>Sector</th><th>Ingreso</th><th>Salida</th><th>Fotos</th></tr>
-                                </thead>
-                                <tbody id="tbody-voluntarios">
-                                    <!-- Datos inyectados desde la Base de Datos -->
-                                    <tr><td colspan="7" style="text-align:center; color:#718096;">Sin registros actuales...</td></tr>
-                                </tbody>
+                                <thead><tr><th>Nombre</th><th>Registro</th><th>Tarea Actual</th><th>Teléfono</th></tr></thead>
+                                <tbody id="tbody-voluntarios"><tr><td colspan="4" style="text-align:center;">Cargando...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -197,8 +167,7 @@
                 <!-- 2. MAPA EN VIVO -->
                 <section id="vista-mapa" class="admin-view hidden">
                     <div class="card">
-                        <h2 class="card-title">Rastreo Georeferenciado (Campus UEB)</h2>
-                        <p style="margin-bottom: 15px; font-size: 14px; color: #718096;">Aquí se visualizarán los puntos marcados por los usuarios en su jornada.</p>
+                        <h2 class="card-title">Rastreo Georreferenciado (Campus UEB)</h2>
                         <div id="mapa-container"></div>
                     </div>
                 </section>
@@ -206,18 +175,11 @@
                 <!-- 3. REPORTES -->
                 <section id="vista-reportes" class="admin-view hidden">
                     <div class="card">
-                        <h2 class="card-title">Bitácoras y Reportes de Trabajo</h2>
-                        <div class="search-bar">
-                            <input type="date" id="search-rep-date">
-                            <input type="text" placeholder="Buscar por Nombre o Registro..." id="search-rep-text">
-                            <button onclick="alert('Función de búsqueda lista para conectar a BD')">Buscar</button>
-                        </div>
+                        <h2 class="card-title">Bitácoras y Reportes Registrados</h2>
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>Fecha</th><th>Usuario</th><th>Rango</th><th>Reporte / Bitácora</th><th>Evidencia (Fotos)</th></tr></thead>
-                                <tbody>
-                                    <!-- Vacio para BD -->
-                                </tbody>
+                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Ingreso</th><th>Salida</th><th>Reporte / Tarea</th></tr></thead>
+                                <tbody id="tbody-reportes"><tr><td colspan="6" style="text-align:center;">Cargando asistencias...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -226,17 +188,11 @@
                 <!-- 4. HORAS RSU -->
                 <section id="vista-horas" class="admin-view hidden">
                     <div class="card">
-                        <h2 class="card-title">Contabilidad de Horas RSU (Máx. 8hrs/día)</h2>
-                        <div class="search-bar">
-                            <input type="text" placeholder="Buscar por Nombre, Registro o C.I..." id="search-hrs-text">
-                            <button>Calcular Totales</button>
-                        </div>
+                        <h2 class="card-title">Contabilidad de Horas RSU</h2>
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>Fecha</th><th>Nombre Completo</th><th>C.I.</th><th>Registro</th><th>Ingreso</th><th>Salida</th><th>Horas Acreditadas</th></tr></thead>
-                                <tbody>
-                                    <!-- Vacio para BD -->
-                                </tbody>
+                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Ingreso</th><th>Salida</th><th>Tarea Realizada</th></tr></thead>
+                                <tbody id="tbody-horas"><tr><td colspan="6" style="text-align:center;">Cargando registros...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -246,16 +202,10 @@
                 <section id="vista-historial" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Historial General de Actividades</h2>
-                        <div class="search-bar">
-                            <input type="text" placeholder="Buscar por Nombre, Registro o C.I..." id="search-hist-text">
-                            <button>Buscar en Archivo</button>
-                        </div>
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Actividad / Reporte</th><th>Entrada</th><th>Salida</th><th>Fotos</th><th>Ubicación</th></tr></thead>
-                                <tbody>
-                                    <!-- En la columna de ubicación irá el botón que abre el mapa en las coordenadas guardadas -->
-                                </tbody>
+                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Registro</th><th>Ingreso</th><th>Salida</th><th>Reporte</th></tr></thead>
+                                <tbody id="tbody-historial"><tr><td colspan="6" style="text-align:center;">Cargando historial...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -264,47 +214,43 @@
                 <!-- 6. CREAR USUARIO -->
                 <section id="vista-crear" class="admin-view hidden">
                     <div class="card">
-                        <h2 class="card-title">Registro de Nuevo Personal</h2>
-                        
+                        <h2 class="card-title">Registro de Nuevo Usuario en la Base de Datos</h2>
                         <div class="form-grid">
-                            <!-- Datos Institucionales -->
                             <div class="form-group">
-                                <label>Rango en el Sistema</label>
+                                <label>Rango / Rol</label>
                                 <select id="nu-rango">
-                                    <option value="Voluntario RSU">Voluntario RSU</option>
-                                    <option value="Becario">Becario</option>
+                                    <option value="voluntario">Voluntario RSU</option>
+                                    <option value="becario">Becario</option>
+                                    <option value="admin">Administrador</option>
                                 </select>
                             </div>
-                            <div class="form-group"><label>Registro Universitario (Será la contraseña)</label><input type="number" id="nu-registro"></div>
-                            <div class="form-group"><label>Correo Institucional (Será el usuario)</label><input type="email" id="nu-correo-inst"></div>
-                            <div class="form-group"><label>Carrera</label><input type="text" id="nu-carrera"></div>
-                            
-                            <!-- Datos Personales -->
+                            <div class="form-group"><label>Registro Universitario (Contraseña)</label><input type="text" id="nu-registro"></div>
+                            <div class="form-group"><label>Correo Institucional (Usuario)</label><input type="email" id="nu-correo-inst"></div>
                             <div class="form-group"><label>Nombre Completo</label><input type="text" id="nu-nombre"></div>
-                            <div class="form-group"><label>Carnet de Identidad (C.I.)</label><input type="text" id="nu-ci"></div>
-                            <div class="form-group"><label>Número de Teléfono Personal</label><input type="tel" id="nu-tel-personal"></div>
+                            <div class="form-group"><label>Cédula de Identidad (C.I.)</label><input type="text" id="nu-ci"></div>
+                            <div class="form-group"><label>Teléfono Personal</label><input type="tel" id="nu-tel-personal"></div>
+                            <div class="form-group"><label>Teléfono Referencia</label><input type="tel" id="nu-tel-ref"></div>
+                            <div class="form-group"><label>Parentesco Referencia</label><input type="text" id="nu-parentesco-ref" placeholder="Ej. Madre, Padre"></div>
                             <div class="form-group"><label>Correo Personal</label><input type="email" id="nu-correo-pers"></div>
-                            <div class="form-group" style="grid-column: 1 / -1;"><label>Ubicación de Vivienda Actual</label><input type="text" id="nu-vivienda"></div>
-                            
-                            <!-- Contacto de Emergencia y Médicos -->
-                            <div class="form-group"><label>Teléfono de Referencia / Emergencia</label><input type="tel" id="nu-tel-ref"></div>
-                            <div class="form-group"><label>¿De quién es el teléfono de referencia?</label><input type="text" id="nu-titular-ref" placeholder="Ej. Madre, Padre, Hermano..."></div>
-                            
+                            <div class="form-group" style="grid-column: 1 / -1;"><label>Dirección de Vivienda</label><input type="text" id="nu-vivienda"></div>
                             <div class="form-group"><label>Tipo de Sangre</label><input type="text" id="nu-sangre"></div>
-                            <div class="form-group"><label>Enfermedad de Base</label><input type="text" id="nu-enfermedad" placeholder="Si no tiene, escriba 'Ninguna'"></div>
-                            <div class="form-group" style="grid-column: 1 / -1;"><label>¿Alérgico a?</label><input type="text" id="nu-alergias" placeholder="Si no tiene, escriba 'Ninguna'"></div>
+                            <div class="form-group"><label>Género</label><input type="text" id="nu-genero"></div>
+                            <div class="form-group"><label>Fecha de Nacimiento</label><input type="date" id="nu-fecha-nac"></div>
                         </div>
-
-                        <button class="u-btn u-btn-green" style="margin-top: 25px;" onclick="guardarUsuario()">Registrar Usuario en Base de Datos</button>
+                        <button class="u-btn u-btn-green" style="margin-top: 25px;" onclick="guardarUsuarioBD()">Guardar Usuario en PostgreSQL</button>
                     </div>
                 </section>
-
             </div>
         </main>
     </div>
 
     <script>
-        // --- RELOJ LOCAL PARA VISTAS ---
+        // CONFIGURACIÓN DE CONEXIÓN AL BACKEND
+        const API_URL = 'http://192.168.10.251:3000';
+        let usuarioSesion = null;
+        let asistenciaActualId = null;
+
+        // Reloj
         setInterval(() => {
             const now = new Date();
             const clockEl = document.getElementById('u-clock');
@@ -313,28 +259,49 @@
             if(dateEl) dateEl.textContent = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }, 1000);
 
-        // --- SISTEMA DE LOGIN TEMPORAL (Preparado para Fetch) ---
-        function iniciarSesion() {
+        // --- INICIO DE SESIÓN CONECTADO A LA BASE DE DATOS ---
+        async function iniciarSesion() {
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
             const err = document.getElementById('login-error');
 
-            // TODO: Esto será reemplazado por un fetch() a tu API de autenticación
-            if (email === 'admin@ueb.edu.bo' && pass === 'admin') {
-                err.style.display = 'none';
-                document.getElementById('login-wrapper').style.display = 'none';
-                document.getElementById('admin-wrapper').style.display = 'flex';
-                // Inicializa el mapa si está oculto
-                setTimeout(() => { if(mapaAd) mapaAd.invalidateSize(); }, 200);
-            } else {
-                // Modo pruebas para ver diseño: Si escribes cualquier otra cosa entra como Voluntario
-                err.style.display = 'none';
-                document.getElementById('login-wrapper').style.display = 'none';
-                document.getElementById('user-wrapper').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_URL}/api/usuarios`);
+                const usuarios = await res.json();
+                
+                // Buscar usuario que coincida con correo institucional y registro
+                const usuario = usuarios.find(u => 
+                    (u.correo_inst === email || u.registro_universitario === email) && 
+                    u.registro_universitario === pass
+                );
+
+                if (usuario) {
+                    err.style.display = 'none';
+                    usuarioSesion = usuario;
+
+                    if (usuario.rol === 'admin') {
+                        document.getElementById('login-wrapper').style.display = 'none';
+                        document.getElementById('admin-wrapper').style.display = 'flex';
+                        cargarDatosAdminBD();
+                    } else {
+                        document.getElementById('login-wrapper').style.display = 'none';
+                        document.getElementById('user-wrapper').style.display = 'flex';
+                        document.getElementById('u-display-name').innerText = `Hola, ${usuario.nombre_completo.split(' ')[0]}`;
+                        document.getElementById('u-display-rank').innerText = `Perfil: ${usuario.rol}`;
+                        document.getElementById('u-assigned-main').innerText = usuario.tarea_actual || 'Sin asignar';
+                    }
+                } else {
+                    err.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error al conectar con la API:", error);
+                alert("No se pudo establecer conexión con el servidor en el puerto 3000.");
             }
         }
 
         function cerrarSesion() {
+            usuarioSesion = null;
+            asistenciaActualId = null;
             document.getElementById('user-wrapper').style.display = 'none';
             document.getElementById('admin-wrapper').style.display = 'none';
             document.getElementById('login-wrapper').style.display = 'flex';
@@ -342,23 +309,162 @@
             document.getElementById('login-email').value = '';
         }
 
-        // --- NAVEGACIÓN DEL ADMINISTRADOR ---
-        let mapaAd; // Variable del mapa de Leaflet
+        // --- REGISTRO DE ASISTENCIAS (INGRESO / SALIDA) ---
+        async function marcarIngresoBD() {
+            if (!usuarioSesion) return;
+            const horaLocal = new Date().toLocaleTimeString('es-ES', { hour12: false });
+            try {
+                const res = await fetch(`${API_URL}/api/asistencias`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        usuario_id: usuarioSesion.id,
+                        hora_local: horaLocal,
+                        tarea_turno: usuarioSesion.tarea_actual || 'Turno Regular'
+                    })
+                });
+                const asistencia = await res.json();
+                asistenciaActualId = asistencia.id;
+
+                document.getElementById('u-btn-ingreso').disabled = true;
+                document.getElementById('u-btn-salida').disabled = false;
+                const badge = document.getElementById('u-badge-estado');
+                badge.textContent = '🟢 Turno Activo';
+                badge.style.background = '#c6f6d5'; badge.style.color = '#22543d';
+                alert("¡Ingreso registrado en PostgreSQL!");
+            } catch (err) {
+                alert("Error al registrar el ingreso.");
+            }
+        }
+
+        async function marcarSalidaBD() {
+            if (!asistenciaActualId) return;
+            const horaSalida = new Date().toLocaleTimeString('es-ES', { hour12: false });
+            const reporte = prompt("Describe brevemente la actividad realizada:");
+
+            try {
+                await fetch(`${API_URL}/api/asistencias/${asistenciaActualId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        hora_salida: horaSalida,
+                        tarea_completada: 'Si',
+                        reporte_usuario: reporte || 'Sin reporte'
+                    })
+                });
+
+                document.getElementById('u-btn-ingreso').disabled = false;
+                document.getElementById('u-btn-salida').disabled = true;
+                const badge = document.getElementById('u-badge-estado');
+                badge.textContent = '🔴 Fuera de turno';
+                badge.style.background = '#edf2f7'; badge.style.color = '#4a5568';
+                alert("¡Salida registrada exitosamente!");
+            } catch (err) {
+                alert("Error al registrar la salida.");
+            }
+        }
+
+        // --- CARGAR DATOS EN EL PANEL ADMINISTRADOR ---
+        async function cargarDatosAdminBD() {
+            try {
+                const resUsuarios = await fetch(`${API_URL}/api/usuarios`);
+                const usuarios = await resUsuarios.json();
+
+                const tbodyBecarios = document.getElementById('tbody-becarios');
+                const tbodyVoluntarios = document.getElementById('tbody-voluntarios');
+
+                tbodyBecarios.innerHTML = '';
+                tbodyVoluntarios.innerHTML = '';
+
+                usuarios.forEach(u => {
+                    const row = `<tr><td>${u.nombre_completo}</td><td>${u.registro_universitario}</td><td>${u.tarea_actual || 'Sin asignar'}</td><td>${u.telefono || 'N/A'}</td></tr>`;
+                    if (u.rol === 'becario') tbodyBecarios.innerHTML += row;
+                    else if (u.rol === 'voluntario') tbodyVoluntarios.innerHTML += row;
+                });
+
+                if (tbodyBecarios.innerHTML === '') tbodyBecarios.innerHTML = '<tr><td colspan="4" style="text-align:center;">Sin becarios registrados.</td></tr>';
+                if (tbodyVoluntarios.innerHTML === '') tbodyVoluntarios.innerHTML = '<tr><td colspan="4" style="text-align:center;">Sin voluntarios registrados.</td></tr>';
+
+                // Cargar asistencias globales
+                const resAsist = await fetch(`${API_URL}/api/asistencias_globales`);
+                const asistencias = await resAsist.json();
+
+                const tbodyReportes = document.getElementById('tbody-reportes');
+                const tbodyHoras = document.getElementById('tbody-horas');
+                const tbodyHistorial = document.getElementById('tbody-historial');
+
+                tbodyReportes.innerHTML = '';
+                tbodyHoras.innerHTML = '';
+                tbodyHistorial.innerHTML = '';
+
+                asistencias.forEach(a => {
+                    const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
+                    const fila = `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.ci || a.registro_universitario}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td>${a.reporte_usuario || a.tarea_realizada || 'Sin reporte'}</td></tr>`;
+                    
+                    tbodyReportes.innerHTML += fila;
+                    tbodyHoras.innerHTML += fila;
+                    tbodyHistorial.innerHTML += fila;
+                });
+
+            } catch (err) {
+                console.error("Error al cargar datos desde la API:", err);
+            }
+        }
+
+        // --- CREAR USUARIO EN LA BASE DE DATOS ---
+        async function guardarUsuarioBD() {
+            const payload = {
+                rol: document.getElementById('nu-rango').value,
+                registro_universitario: document.getElementById('nu-registro').value.trim(),
+                correo_inst: document.getElementById('nu-correo-inst').value.trim(),
+                nombre_completo: document.getElementById('nu-nombre').value.trim(),
+                ci: document.getElementById('nu-ci').value.trim(),
+                telefono: document.getElementById('nu-tel-personal').value.trim(),
+                telefono_ref: document.getElementById('nu-tel-ref').value.trim(),
+                parentesco_ref: document.getElementById('nu-parentesco-ref').value.trim(),
+                correo_pers: document.getElementById('nu-correo-pers').value.trim(),
+                direccion: document.getElementById('nu-vivienda').value.trim(),
+                sangre: document.getElementById('nu-sangre').value.trim(),
+                genero: document.getElementById('nu-genero').value.trim(),
+                fecha_nacimiento: document.getElementById('nu-fecha-nac').value || null
+            };
+
+            if (!payload.registro_universitario || !payload.correo_inst || !payload.nombre_completo) {
+                alert("Por favor, llene al menos Nombre, Registro y Correo Institucional.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/usuarios`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert("¡Usuario creado exitosamente en la base de datos de PostgreSQL!");
+                    document.querySelectorAll('.form-grid input').forEach(input => input.value = '');
+                    cargarDatosAdminBD();
+                } else {
+                    alert("Ocurrió un error al guardar el usuario.");
+                }
+            } catch (err) {
+                alert("No se pudo conectar con el servidor.");
+            }
+        }
+
+        // --- NAVEGACIÓN ADMINISTRADOR ---
+        let mapaAd;
         function cambiarVista(idVista, btnElement) {
-            // 1. Ocultar todas las secciones
             document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
-            // 2. Quitar clase active de todos los botones
             document.querySelectorAll('.a-menu li').forEach(el => el.classList.remove('active'));
             
-            // 3. Mostrar la sección deseada y marcar botón
             document.getElementById(idVista).classList.remove('hidden');
             btnElement.classList.add('active');
             
-            // 4. Cambiar título en móviles y cerrar menú
             document.getElementById('mobile-title').innerText = btnElement.innerText.replace(/[^\w\s]/gi, '').trim();
             document.getElementById('sidebar').classList.remove('open');
 
-            // 5. Cargar mapa si es necesario (La latitud y longitud de la UEB)
             if(idVista === 'vista-mapa') {
                 if(!mapaAd) {
                     mapaAd = L.map('mapa-container').setView([-17.835, -63.2045], 16);
@@ -366,32 +472,6 @@
                 }
                 setTimeout(() => { mapaAd.invalidateSize(); }, 200);
             }
-        }
-
-        // --- FUNCIÓN CREAR USUARIO (Lista para enviar a BD) ---
-        function guardarUsuario() {
-            const data = {
-                rango: document.getElementById('nu-rango').value,
-                registro: document.getElementById('nu-registro').value,
-                correo_inst: document.getElementById('nu-correo-inst').value,
-                carrera: document.getElementById('nu-carrera').value,
-                nombre: document.getElementById('nu-nombre').value,
-                ci: document.getElementById('nu-ci').value,
-                tel_personal: document.getElementById('nu-tel-personal').value,
-                correo_pers: document.getElementById('nu-correo-pers').value,
-                vivienda: document.getElementById('nu-vivienda').value,
-                tel_ref: document.getElementById('nu-tel-ref').value,
-                titular_ref: document.getElementById('nu-titular-ref').value,
-                sangre: document.getElementById('nu-sangre').value,
-                enfermedad: document.getElementById('nu-enfermedad').value,
-                alergias: document.getElementById('nu-alergias').value
-            };
-
-            console.log("Datos listos para enviar al backend:", data);
-            alert("Formulario estructurado correctamente. Conexión a Base de Datos pendiente para guardar la información.");
-            
-            // Limpieza básica (opcional)
-            document.querySelectorAll('.form-grid input').forEach(input => input.value = '');
         }
     </script>
 </body>
