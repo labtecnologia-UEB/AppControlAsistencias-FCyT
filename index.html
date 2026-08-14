@@ -180,7 +180,7 @@
             <input type="email" id="login-email" placeholder="Correo Institucional">
             <input type="password" id="login-pass" placeholder="Registro Universitario / Contraseña">
             <button onclick="iniciarSesion()">Ingresar</button>
-            <p id="login-error" style="color:red; display:none; margin-top:15px; font-weight:bold;">Credenciales incorrectas o conexión fallida.</p>
+            <p id="login-error" style="color:red; display:none; margin-top:15px; font-weight:bold;">Credenciales incorrectas o servidor desconectado.</p>
         </div>
     </div>
 
@@ -309,8 +309,8 @@
                 <section id="vista-mapa" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Rastreo Georreferenciado (Campus UEB)</h2>
-                        <p style="margin-bottom:10px; color:#718096;">Se muestra la ubicación exacta que marcaron los estudiantes al iniciar su turno.</p>
-                        <div id="mapa-container"></div>
+                        <p style="margin-bottom:10px; color:#718096;">Se muestran los estudiantes con turno activo. El mapa se centrará automáticamente en ellos.</p>
+                        <div id="mapa-container" style="height: 60vh; width: 100%; border-radius: 8px; border: 1px solid #dfe1e6;"></div>
                     </div>
                 </section>
 
@@ -426,6 +426,14 @@
         let globalUsuarios = [];
         let globalAsistencias = [];
 
+        // Solución universal para que los iconos de Leaflet no se hagan invisibles en GitHub
+        delete L.Icon.Default.prototype._getIconUrl;
+        L.Icon.Default.mergeOptions({
+            iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        });
+
         // ======== MEMORIA DE SESIÓN AUTOMÁTICA ========
         window.onload = () => {
             const guardado = localStorage.getItem('usuarioSesionFabLab');
@@ -451,7 +459,14 @@
             try {
                 const res = await fetch(`${API_URL}/api/asistencias_globales`);
                 const todas = await res.json();
-                const hoy = new Date().toISOString().split('T')[0];
+                
+                // Calculamos la fecha local exacta para evitar problemas de zona horaria
+                const localNow = new Date();
+                const year = localNow.getFullYear();
+                const month = String(localNow.getMonth() + 1).padStart(2, '0');
+                const day = String(localNow.getDate()).padStart(2, '0');
+                const hoy = `${year}-${month}-${day}`;
+
                 const miTurnoActivo = todas.find(a => a.usuario_id === usuarioSesion.id && (!a.hora_salida || a.hora_salida === 'En turno') && a.fecha && a.fecha.startsWith(hoy));
 
                 if (miTurnoActivo) {
@@ -466,13 +481,10 @@
             }
         }
 
-        // Utilidad base64
         function leerArchivoComoBase64(file) {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
+                const reader = new FileReader(); reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
             });
         }
         function minutosATexto(minsTotales) { return `${Math.floor(minsTotales / 60)}h ${minsTotales % 60}m`; }
@@ -506,7 +518,7 @@
 
                 if (usuario) {
                     usuarioSesion = usuario;
-                    localStorage.setItem('usuarioSesionFabLab', JSON.stringify(usuarioSesion)); // Guarda la sesión
+                    localStorage.setItem('usuarioSesionFabLab', JSON.stringify(usuarioSesion));
                     
                     document.getElementById('login-wrapper').style.display = 'none';
                     if (usuario.rol === 'admin') {
@@ -520,10 +532,11 @@
                         verificarEstadoTurno();
                     }
                 } else {
+                    err.innerText = "Credenciales incorrectas o usuario no encontrado.";
                     err.style.display = 'block';
                 }
             } catch (error) { 
-                err.innerText = "Error: Verifica que el servidor o el túnel estén encendidos.";
+                err.innerText = "Error: El servidor no responde o el túnel está inactivo. Contacte a soporte.";
                 err.style.display = 'block'; 
             }
         }
@@ -645,14 +658,13 @@
                 filtrarHistorial(); ejecutarBusquedaInfoPersonal(); renderizarSelectAsignacion();
                 renderizarTareasVigentes(); renderizarFotos(); renderizarPerfiles();
                 
-                // Si la pestaña del mapa está abierta, actualízalo
                 if(document.getElementById('vista-mapa').classList.contains('hidden') === false) {
                     renderizarMapaAdmin();
                 }
             } catch (err) { console.error("Error al cargar datos:", err); }
         }
 
-        // --- MAPA ADMIN (AGRUPACIÓN DE MARCADORES) ---
+        // --- MAPA ADMIN (AGRUPACIÓN Y AUTOCENTRADO) ---
         let mapaAd;
         let marcadoresAdmin = [];
 
@@ -661,36 +673,47 @@
                 mapaAd = L.map('mapa-container').setView([-17.835, -63.2045], 18);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaAd);
             }
-            setTimeout(() => { mapaAd.invalidateSize(); }, 300);
+            
+            // Usamos setTimeout para esperar a que el contenedor DIV se estire completamente
+            setTimeout(() => { 
+                mapaAd.invalidateSize(); 
 
-            // Limpiar marcadores viejos
-            marcadoresAdmin.forEach(m => mapaAd.removeLayer(m));
-            marcadoresAdmin = [];
+                // Limpiar marcadores viejos
+                marcadoresAdmin.forEach(m => mapaAd.removeLayer(m));
+                marcadoresAdmin = [];
 
-            // Filtrar solo los que están en turno y tienen coordenadas
-            const activos = globalAsistencias.filter(a => (!a.hora_salida || a.hora_salida === 'En turno') && a.latitud && a.longitud);
-            const agrupados = {};
+                // Solo estudiantes activos que sí mandaron coordenadas (lat y lng diferentes de null)
+                const activos = globalAsistencias.filter(a => (!a.hora_salida || a.hora_salida === 'En turno') && a.latitud != null && a.longitud != null);
+                const agrupados = {};
 
-            // Agrupar por coordenadas exactas
-            activos.forEach(a => {
-                const clave = `${a.latitud},${a.longitud}`;
-                if (!agrupados[clave]) agrupados[clave] = [];
-                agrupados[clave].push(a);
-            });
+                // Agrupamos a los que hicieron click en el mismo lugar exacto
+                activos.forEach(a => {
+                    const clave = `${a.latitud},${a.longitud}`;
+                    if (!agrupados[clave]) agrupados[clave] = [];
+                    agrupados[clave].push(a);
+                });
 
-            // Dibujar agrupados
-            for (const clave in agrupados) {
-                const usuarios = agrupados[clave];
-                const [lat, lng] = clave.split(',');
-                
-                let nombresHTML = usuarios.map(u => `• <b>${u.nombre_completo}</b> <i>(${u.sector})</i>`).join('<br>');
-                let titulo = usuarios.length > 1 ? `📍 ${usuarios.length} Personas en este punto:` : `📍 Usuario en turno:`;
+                // Dibujamos el puntero
+                for (const clave in agrupados) {
+                    const usuarios = agrupados[clave];
+                    const [lat, lng] = clave.split(',');
+                    
+                    let nombresHTML = usuarios.map(u => `• <b>${u.nombre_completo}</b> <i>(${u.sector || 'N/A'})</i>`).join('<br>');
+                    let titulo = usuarios.length > 1 ? `📍 ${usuarios.length} Personas en este punto:` : `📍 Usuario en turno:`;
 
-                const marker = L.marker([parseFloat(lat), parseFloat(lng)]).addTo(mapaAd)
-                    .bindPopup(`<div style="font-size:14px; min-width:180px;"><b>${titulo}</b><br><div style="margin-top:8px;">${nombresHTML}</div></div>`);
-                
-                marcadoresAdmin.push(marker);
-            }
+                    const marker = L.marker([parseFloat(lat), parseFloat(lng)]).addTo(mapaAd)
+                        .bindPopup(`<div style="font-size:14px; min-width:180px;"><b>${titulo}</b><br><div style="margin-top:8px;">${nombresHTML}</div></div>`);
+                    
+                    marcadoresAdmin.push(marker);
+                }
+
+                // Hacer ZOOM AUTOMÁTICO hacia donde están los marcadores
+                if (marcadoresAdmin.length > 0) {
+                    const group = new L.featureGroup(marcadoresAdmin);
+                    mapaAd.fitBounds(group.getBounds(), { padding: [30, 30], maxZoom: 18 });
+                }
+
+            }, 300);
         }
 
         // --- TAREAS VIGENTES ---
