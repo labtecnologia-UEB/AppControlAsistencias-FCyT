@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Integrado FABLAB - UEB</title>
-    <!-- Leaflet para los mapas -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         /* ================= ESTILOS GLOBALES ================= */
@@ -15,7 +15,7 @@
         .wrapper { width: 100vw; height: 100vh; display: none; }
         .hidden { display: none !important; }
 
-        /* ================= PANTALLA DE INGRESO (LOGIN) ================= */
+        /* PANTALLA DE INGRESO */
         #login-wrapper { display: flex; justify-content: center; align-items: center; background: white; }
         .login-box { width: 100%; max-width: 400px; text-align: center; padding: 40px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px; }
         .login-box img { height: 100px; object-fit: contain; margin-bottom: 25px; }
@@ -23,7 +23,15 @@
         .login-box button { width: 100%; background: #1a365d; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
         .login-box button:hover { background: #2c5282; }
 
-        /* ================= INTERFAZ VOLUNTARIO ================= */
+        /* MODALES FLOTANTES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-box h3 { margin-bottom: 15px; color: #1a365d; }
+        .modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #dfe1e6; border-radius: 6px; }
+        .modal-box .btn-row { display: flex; gap: 10px; }
+        .modal-box button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; }
+
+        /* INTERFAZ VOLUNTARIO */
         #user-wrapper { overflow-y: auto; flex-direction: column; align-items: center; padding: 20px 10px; background-color: #f4f7f6; }
         .u-container { width: 100%; max-width: 400px; margin: 0 auto; }
         .u-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -36,15 +44,15 @@
         .u-badge { display: inline-block; margin-top: 15px; padding: 6px 12px; background: #edf2f7; color: #4a5568; border-radius: 20px; font-size: 13px; font-weight: bold; }
         .u-task-box { margin-top: 20px; background: #ebf8fa; border-left: 5px solid #319795; padding: 15px; border-radius: 8px; text-align: left; }
         .u-btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; }
-        .u-btn-green { background: #38a169; } .u-btn-red { background: #e53e3e; } .u-btn-gray { background: #4a5568; } .u-btn-outline { background: transparent; border: 2px solid #e2e8f0; color: #4a5568; }
+        .u-btn-green { background: #38a169; } .u-btn-red { background: #e53e3e; } .u-btn-outline { background: transparent; border: 2px solid #e2e8f0; color: #4a5568; }
 
-        /* ================= INTERFAZ ADMINISTRADOR ================= */
+        /* INTERFAZ ADMINISTRADOR */
         #admin-wrapper { display: flex; flex-direction: row; background: #f4f5f7; }
         .a-sidebar { width: 250px; background: #1a365d; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; }
         .a-sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .a-sidebar-header img { height: 50px; background: white; padding: 5px; border-radius: 8px; margin-bottom: 10px; }
         .a-menu { list-style: none; padding: 10px 0; flex-grow: 1; overflow-y: auto; }
-        .a-menu li { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500; transition: 0.2s; }
+        .a-menu li { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500; transition: 0.2s; font-size: 14px; }
         .a-menu li:hover, .a-menu li.active { background: #2c5282; border-left: 4px solid #4299e1; }
         .a-logout { padding: 15px 20px; background: #c53030; text-align: center; cursor: pointer; font-weight: bold; }
         
@@ -55,8 +63,8 @@
         .card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
         .card-title { font-size: 18px; color: #1a365d; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; }
         
-        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .search-bar input { flex-grow: 1; min-width: 200px; padding: 10px; border: 1px solid #dfe1e6; border-radius: 6px; }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .search-bar input, .search-bar select { flex-grow: 1; min-width: 200px; padding: 10px; border: 1px solid #dfe1e6; border-radius: 6px; }
         .search-bar button { padding: 10px 20px; background: #319795; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
         .table-responsive { width: 100%; overflow-x: auto; }
@@ -70,6 +78,23 @@
         .form-group input, .form-group select { padding: 10px; border: 1px solid #dfe1e6; border-radius: 6px; outline: none; }
         
         #mapa-container { width: 100%; height: 60vh; border-radius: 8px; border: 1px solid #dfe1e6; }
+        .mini-card-rsu { background: #ebf8fa; border: 2px solid #319795; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 16px; color: #2d3748; display: none; }
+        .mini-card-rsu strong { color: #319795; font-size: 18px; }
+
+        .foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .foto-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; }
+        .foto-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 6px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .foto-card img:hover { opacity: 0.8; }
+        .foto-card p { font-size: 13px; color: #4a5568; margin-bottom: 5px; }
+
+        /* Estilo para Tareas Vigentes */
+        .tarea-vigente-card { background: white; border: 1px solid #dfe1e6; border-left: 5px solid #3182ce; padding: 15px; margin-bottom: 10px; border-radius: 6px; }
+        .tarea-vigente-card h4 { color: #2c5282; margin-bottom: 5px; font-size: 16px; }
+        .tarea-vigente-card p { font-size: 13px; color: #4a5568; margin-bottom: 12px; }
+        .tv-btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; margin-right: 5px; }
+        .tv-btn-edit { background: #edf2f7; color: #2d3748; }
+        .tv-btn-add { background: #ebf8fa; color: #319795; }
+        .tv-btn-del { background: #fed7d7; color: #c53030; }
 
         @media (max-width: 768px) {
             .a-sidebar { position: fixed; left: -250px; height: 100%; z-index: 1000; }
@@ -80,10 +105,63 @@
 </head>
 <body>
 
-    <!-- ==================== PANTALLA DE LOGIN ==================== -->
+    <!-- MODAL NUEVO: VER FOTO AMPLIADA -->
+    <div id="modal-ver-foto" class="modal-overlay" onclick="if(event.target === this) this.style.display='none'">
+        <div style="position:relative; width: 90%; max-width: 800px; text-align: center;">
+            <img id="img-ampliada" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <button style="position:absolute; top:-15px; right:-15px; background:#e53e3e; color:white; border:none; border-radius:50%; width:35px; height:35px; font-weight:bold; cursor:pointer; font-size:16px;" onclick="document.getElementById('modal-ver-foto').style.display='none'">X</button>
+        </div>
+    </div>
+
+    <!-- MODAL ESTUDIANTE: MARCAR SALIDA Y SUBIR FOTO -->
+    <div id="modal-salida" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Finalizar Turno / Tarea</h3>
+            <label>¿Finalizaste la tarea asignada?</label>
+            <select id="ms-completada">
+                <option value="Si">Sí, tarea finalizada</option>
+                <option value="No">No, quedó pendiente</option>
+                <option value="No tenia">No tenía tarea específica</option>
+            </select>
+            <label>Reporte de Actividad (Obligatorio)</label>
+            <textarea id="ms-reporte" rows="3" placeholder="Describe brevemente lo que hiciste..."></textarea>
+            <label>Subir Prueba Fotográfica</label>
+            <input type="file" id="ms-foto" accept="image/*">
+            <div class="btn-row">
+                <button style="background: #a0aec0;" onclick="cerrarModalSalida()">Cancelar</button>
+                <button style="background: #e53e3e;" onclick="confirmarSalidaBD()">Registrar Salida</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADMIN: EDITAR PERFIL -->
+    <div id="modal-editar" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Editar Información del Usuario</h3>
+            <input type="hidden" id="me-id">
+            <label>Nombre Completo</label>
+            <input type="text" id="me-nombre">
+            <label>Teléfono</label>
+            <input type="text" id="me-tel">
+            <label>Dirección</label>
+            <input type="text" id="me-dir">
+            <label>Rol</label>
+            <select id="me-rol">
+                <option value="voluntario">Voluntario RSU</option>
+                <option value="becario">Becario</option>
+                <option value="admin">Administrador</option>
+            </select>
+            <div class="btn-row">
+                <button style="background: #a0aec0;" onclick="cerrarModalEditar()">Cancelar</button>
+                <button style="background: #319795;" onclick="guardarEdicionPerfil()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE LOGIN -->
     <div id="login-wrapper" class="wrapper" style="display: flex;">
         <div class="login-box">
-            <img src="logofablabUEB-removebg-preview.png" alt="Logo UEB">
+            <img src="logofablabUEB-removebg-preview.png" alt="Logo UEB" onerror="this.style.display='none'">
             <h2 style="color: #1a365d; margin-bottom: 20px;">INICIO DE SESIÓN</h2>
             <input type="email" id="login-email" placeholder="Correo Institucional">
             <input type="password" id="login-pass" placeholder="Registro Universitario / Contraseña">
@@ -92,7 +170,7 @@
         </div>
     </div>
 
-    <!-- ==================== INTERFAZ VOLUNTARIO / ESTUDIANTE ==================== -->
+    <!-- INTERFAZ VOLUNTARIO -->
     <div id="user-wrapper" class="wrapper">
         <div class="u-container">
             <header class="u-header">
@@ -100,7 +178,7 @@
                     <h2 id="u-display-name">Hola, Usuario</h2>
                     <p id="u-display-rank">Perfil: Estudiante</p>
                 </div>
-                <img src="logofablabUEB-removebg-preview.png" class="u-logo" alt="Logo">
+                <img src="logofablabUEB-removebg-preview.png" class="u-logo" alt="Logo" onerror="this.style.display='none'">
             </header>
             <div class="u-time-card">
                 <div id="u-clock">00:00:00</div>
@@ -112,24 +190,28 @@
                 </div>
             </div>
             <button class="u-btn u-btn-green" id="u-btn-ingreso" onclick="marcarIngresoBD()">Marcar Ingreso</button>
-            <button class="u-btn u-btn-red" id="u-btn-salida" onclick="marcarSalidaBD()" disabled>Marcar Salida</button>
+            <button class="u-btn u-btn-red" id="u-btn-salida" onclick="abrirModalSalida()" disabled>Marcar Salida</button>
             <button class="u-btn u-btn-outline" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
     </div>
 
-    <!-- ==================== INTERFAZ ADMINISTRADOR ==================== -->
+    <!-- INTERFAZ ADMINISTRADOR -->
     <div id="admin-wrapper" class="wrapper">
         <aside class="a-sidebar" id="sidebar">
             <div class="a-sidebar-header">
-                <img src="logofablabUEB-removebg-preview.png" alt="Logo">
+                <img src="logofablabUEB-removebg-preview.png" alt="Logo" onerror="this.style.display='none'">
                 <h3>Panel de Control</h3>
             </div>
             <ul class="a-menu">
                 <li class="active" onclick="cambiarVista('vista-rapida', this)">👁️ Vista Rápida</li>
+                <li onclick="cambiarVista('vista-info-personal', this)">👤 Información Personal</li>
+                <li onclick="cambiarVista('vista-asignar', this)">📝 Asignar Tareas</li>
+                <li onclick="cambiarVista('vista-fotos', this)">📸 Pruebas Fotográficas</li>
                 <li onclick="cambiarVista('vista-mapa', this)">🗺️ Mapa en Vivo</li>
                 <li onclick="cambiarVista('vista-reportes', this)">📋 Reportes y Bitácoras</li>
                 <li onclick="cambiarVista('vista-horas', this)">⏱️ Control Horas RSU</li>
                 <li onclick="cambiarVista('vista-historial', this)">📜 Historial General</li>
+                <li onclick="cambiarVista('vista-perfiles', this)">👥 Perfiles Creados</li>
                 <li onclick="cambiarVista('vista-crear', this)">➕ Crear Usuario</li>
             </ul>
             <div class="a-logout" onclick="cerrarSesion()">Salir del Sistema</div>
@@ -145,26 +227,78 @@
                 <!-- 1. VISTA RÁPIDA -->
                 <section id="vista-rapida" class="admin-view">
                     <div class="card">
-                        <h2 class="card-title">Resumen del Día (Base de Datos PostgreSQL)</h2>
-                        <h3 style="color:#d69e2e; margin: 15px 0 10px;">Becarios de Turno Activos</h3>
+                        <h2 class="card-title">Resumen del Día - Usuarios en el FabLab</h2>
+                        <h3 style="color:#d69e2e; margin: 15px 0 10px;">Becarios</h3>
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>Nombre</th><th>Registro</th><th>Tarea Actual</th><th>Teléfono</th></tr></thead>
-                                <tbody id="tbody-becarios"><tr><td colspan="4" style="text-align:center;">Cargando...</td></tr></tbody>
+                                <thead><tr><th>Nombre</th><th>Registro</th><th>Tarea Actual</th><th>Hora Ingreso</th><th>Estado</th></tr></thead>
+                                <tbody id="tbody-becarios"><tr><td colspan="5" style="text-align:center;">Cargando...</td></tr></tbody>
                             </table>
                         </div>
 
-                        <h3 style="color:#38a169; margin: 25px 0 10px;">Voluntarios RSU Activos</h3>
+                        <h3 style="color:#38a169; margin: 25px 0 10px;">Voluntarios RSU</h3>
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>Nombre</th><th>Registro</th><th>Tarea Actual</th><th>Teléfono</th></tr></thead>
-                                <tbody id="tbody-voluntarios"><tr><td colspan="4" style="text-align:center;">Cargando...</td></tr></tbody>
+                                <thead><tr><th>Nombre</th><th>Registro</th><th>Tarea Actual</th><th>Hora Ingreso</th><th>Estado</th></tr></thead>
+                                <tbody id="tbody-voluntarios"><tr><td colspan="5" style="text-align:center;">Cargando...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- 2. MAPA EN VIVO -->
+                <!-- 2. INFORMACIÓN PERSONAL -->
+                <section id="vista-info-personal" class="admin-view hidden">
+                    <div class="card">
+                        <h2 class="card-title">Información Personal y Perfiles</h2>
+                        <div class="search-bar">
+                            <input type="text" id="busqueda-info" placeholder="Buscar por Nombre o Registro..." onkeyup="ejecutarBusquedaInfoPersonal()">
+                        </div>
+                        <div id="contenedor-info-personal">
+                            <p style="color: #718096;">Busca un usuario para ver su perfil completo.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. ASIGNAR TAREAS -->
+                <section id="vista-asignar" class="admin-view hidden">
+                    <div class="card">
+                        <h2 class="card-title">Asignación de Nuevas Tareas</h2>
+                        <div class="form-grid">
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label>Seleccionar Usuarios (Mantén presionada la tecla Ctrl para seleccionar varios)</label>
+                                <select id="asignar-usuarios" multiple style="height: 120px;"></select>
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label>Descripción de la Tarea</label>
+                                <textarea id="asignar-desc" rows="2" placeholder="Ej: Inventario de impresoras 3D..."></textarea>
+                            </div>
+                        </div>
+                        <button class="u-btn u-btn-green" style="margin-top: 15px;" onclick="asignarTareaMultiple()">Asignar Tarea a Seleccionados</button>
+                    </div>
+
+                    <div class="card" style="margin-top: 20px;">
+                        <h2 class="card-title">📌 Tareas Vigentes (En progreso)</h2>
+                        <div id="contenedor-tareas-vigentes">
+                            <p style="color: #718096;">Cargando tareas vigentes...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. PRUEBAS FOTOGRÁFICAS -->
+                <section id="vista-fotos" class="admin-view hidden">
+                    <div class="card">
+                        <h2 class="card-title">Galería de Pruebas Fotográficas</h2>
+                        <div class="search-bar">
+                            <input type="date" id="filtro-foto-fecha" onchange="renderizarFotos()">
+                            <input type="text" id="filtro-foto-nombre" placeholder="Buscar por nombre..." onkeyup="renderizarFotos()">
+                        </div>
+                        <div class="foto-grid" id="contenedor-fotos">
+                            <!-- Se llena con JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MAPA EN VIVO -->
                 <section id="vista-mapa" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Rastreo Georreferenciado (Campus UEB)</h2>
@@ -172,49 +306,86 @@
                     </div>
                 </section>
 
-                <!-- 3. REPORTES -->
+                <!-- REPORTES Y BITÁCORAS -->
                 <section id="vista-reportes" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Bitácoras y Reportes Registrados</h2>
+                        <h3 style="color:#38a169; margin: 15px 0 10px;">🔵 Reportes - Voluntarios RSU</h3>
+                        <div class="table-responsive" style="margin-bottom: 30px;">
+                            <table>
+                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Sector</th><th>Ingreso</th><th>Salida</th><th>Reporte / Tarea</th></tr></thead>
+                                <tbody id="tbody-reportes-rsu"><tr><td colspan="6" style="text-align:center;">Cargando...</td></tr></tbody>
+                            </table>
+                        </div>
+
+                        <h3 style="color:#d69e2e; margin: 15px 0 10px;">🟠 Reportes - Becarios</h3>
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Ingreso</th><th>Salida</th><th>Reporte / Tarea</th></tr></thead>
-                                <tbody id="tbody-reportes"><tr><td colspan="6" style="text-align:center;">Cargando asistencias...</td></tr></tbody>
+                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Sector</th><th>Ingreso</th><th>Salida</th><th>Reporte / Tarea</th></tr></thead>
+                                <tbody id="tbody-reportes-becarios"><tr><td colspan="6" style="text-align:center;">Cargando...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- 4. HORAS RSU -->
+                <!-- HORAS RSU -->
                 <section id="vista-horas" class="admin-view hidden">
                     <div class="card">
-                        <h2 class="card-title">Contabilidad de Horas RSU</h2>
+                        <h2 class="card-title">Control de Horas RSU</h2>
+                        <div class="search-bar">
+                            <input type="text" id="busqueda-horas-nombre" placeholder="Buscar por Nombre o Registro..." onkeyup="ejecutarBusquedaHoras()">
+                            <input type="date" id="busqueda-horas-fecha" onchange="ejecutarBusquedaHoras()">
+                        </div>
+                        <div id="mini-tarjeta-rsu" class="mini-card-rsu">
+                            Usuario: <span id="rsu-nombre-resumen"></span> <br>
+                            <strong>Total RSU Acumulado: <span id="rsu-total-resumen">0h 0m</span></strong>
+                        </div>
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Ingreso</th><th>Salida</th><th>Tarea Realizada</th></tr></thead>
-                                <tbody id="tbody-horas"><tr><td colspan="6" style="text-align:center;">Cargando registros...</td></tr></tbody>
+                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Hora Ingreso</th><th>Hora Salida</th><th>Horas Totales del Turno</th></tr></thead>
+                                <tbody id="tbody-horas"><tr><td colspan="5" style="text-align:center;">Cargando registros...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- 5. HISTORIAL GENERAL -->
+                <!-- HISTORIAL GENERAL -->
                 <section id="vista-historial" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Historial General de Actividades</h2>
-                        <div class="table-responsive">
-                            <table>
-                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Registro</th><th>Ingreso</th><th>Salida</th><th>Reporte</th></tr></thead>
-                                <tbody id="tbody-historial"><tr><td colspan="6" style="text-align:center;">Cargando historial...</td></tr></tbody>
+                        <div class="search-bar">
+                            <input type="text" id="historial-nombre" placeholder="Nombre o Registro..." onkeyup="filtrarHistorial()">
+                            <input type="date" id="historial-dia" title="Filtrar por Día Exacto" onchange="filtrarHistorial()">
+                            <input type="month" id="historial-mes" title="Filtrar por Mes" onchange="filtrarHistorial()">
+                            <button onclick="generarPDF('6meses')" style="background: #e53e3e;">📄 PDF (Últimos 6 Meses)</button>
+                            <button onclick="generarPDF('filtrado')" style="background: #2b6cb0;">📄 PDF (Búsqueda Actual)</button>
+                        </div>
+                        <div class="table-responsive" id="contenedor-tabla-historial">
+                            <table id="tabla-exportar-pdf">
+                                <thead><tr><th>Fecha</th><th>Nombre</th><th>Registro</th><th>Sector</th><th>Ingreso</th><th>Salida</th><th>Reporte</th></tr></thead>
+                                <tbody id="tbody-historial"><tr><td colspan="7" style="text-align:center;">Cargando historial...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- 6. CREAR USUARIO -->
+                <!-- GESTIÓN DE PERFILES -->
+                <section id="vista-perfiles" class="admin-view hidden">
+                    <div class="card">
+                        <h2 class="card-title">Gestión de Perfiles Creados</h2>
+                        <div class="table-responsive">
+                            <table>
+                                <thead><tr><th>Nombre</th><th>Registro</th><th>Rol</th><th>Correo Inst.</th><th>Acciones</th></tr></thead>
+                                <tbody id="tbody-perfiles"><tr><td colspan="5" style="text-align:center;">Cargando perfiles...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CREAR USUARIO -->
                 <section id="vista-crear" class="admin-view hidden">
                     <div class="card">
-                        <h2 class="card-title">Registro de Nuevo Usuario en la Base de Datos</h2>
+                        <h2 class="card-title">Registro de Nuevo Usuario</h2>
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Rango / Rol</label>
@@ -225,19 +396,19 @@
                                 </select>
                             </div>
                             <div class="form-group"><label>Registro Universitario (Contraseña)</label><input type="text" id="nu-registro"></div>
-                            <div class="form-group"><label>Correo Institucional (Usuario)</label><input type="email" id="nu-correo-inst"></div>
+                            <div class="form-group"><label>Correo Institucional</label><input type="email" id="nu-correo-inst" placeholder="Dejar vacío para auto-generar"></div>
                             <div class="form-group"><label>Nombre Completo</label><input type="text" id="nu-nombre"></div>
                             <div class="form-group"><label>Cédula de Identidad (C.I.)</label><input type="text" id="nu-ci"></div>
                             <div class="form-group"><label>Teléfono Personal</label><input type="tel" id="nu-tel-personal"></div>
                             <div class="form-group"><label>Teléfono Referencia</label><input type="tel" id="nu-tel-ref"></div>
-                            <div class="form-group"><label>Parentesco Referencia</label><input type="text" id="nu-parentesco-ref" placeholder="Ej. Madre, Padre"></div>
+                            <div class="form-group"><label>Parentesco Referencia</label><input type="text" id="nu-parentesco-ref"></div>
                             <div class="form-group"><label>Correo Personal</label><input type="email" id="nu-correo-pers"></div>
                             <div class="form-group" style="grid-column: 1 / -1;"><label>Dirección de Vivienda</label><input type="text" id="nu-vivienda"></div>
                             <div class="form-group"><label>Tipo de Sangre</label><input type="text" id="nu-sangre"></div>
                             <div class="form-group"><label>Género</label><input type="text" id="nu-genero"></div>
                             <div class="form-group"><label>Fecha de Nacimiento</label><input type="date" id="nu-fecha-nac"></div>
                         </div>
-                        <button class="u-btn u-btn-green" style="margin-top: 25px;" onclick="guardarUsuarioBD()">Guardar Usuario en PostgreSQL</button>
+                        <button class="u-btn u-btn-green" style="margin-top: 25px;" onclick="guardarUsuarioBD()">Guardar Usuario</button>
                     </div>
                 </section>
             </div>
@@ -245,12 +416,39 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE CONEXIÓN AL BACKEND
-        const API_URL = 'https://heavy-stars-drop.loca.lt';
+        // CONFIGURACIÓN LOCAL
+        const API_URL = 'https://petite-states-warn.loca.lt';
         let usuarioSesion = null;
         let asistenciaActualId = null;
 
-        // Reloj
+        let globalUsuarios = [];
+        let globalAsistencias = [];
+
+        // Utilidad: Leer Archivo Base64 (Para Foto)
+        function leerArchivoComoBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function calcularDiferenciaHoras(ingreso, salida) {
+            if (!salida || salida === 'En turno') return { texto: 'En turno', mins: 0 };
+            try {
+                const [h1, m1] = ingreso.split(':').map(Number);
+                const [h2, m2] = salida.split(':').map(Number);
+                let diffMins = (h2 * 60 + m2) - (h1 * 60 + m1);
+                if (diffMins < 0) diffMins += (24 * 60);
+                return { texto: `${Math.floor(diffMins / 60)}h ${diffMins % 60}m`, mins: diffMins };
+            } catch(e) { return { texto: '0h 0m', mins: 0 }; }
+        }
+
+        function minutosATexto(minsTotales) {
+            return `${Math.floor(minsTotales / 60)}h ${minsTotales % 60}m`;
+        }
+
         setInterval(() => {
             const now = new Date();
             const clockEl = document.getElementById('u-clock');
@@ -259,7 +457,6 @@
             if(dateEl) dateEl.textContent = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }, 1000);
 
-        // --- INICIO DE SESIÓN CONECTADO A LA BASE DE DATOS ---
         async function iniciarSesion() {
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
@@ -268,17 +465,11 @@
             try {
                 const res = await fetch(`${API_URL}/api/usuarios`);
                 const usuarios = await res.json();
-                
-                // Buscar usuario que coincida con correo institucional y registro
-                const usuario = usuarios.find(u => 
-                    (u.correo_inst === email || u.registro_universitario === email) && 
-                    u.registro_universitario === pass
-                );
+                const usuario = usuarios.find(u => (u.correo_inst === email || u.registro_universitario === email) && u.registro_universitario === pass);
 
                 if (usuario) {
                     err.style.display = 'none';
                     usuarioSesion = usuario;
-
                     if (usuario.rol === 'admin') {
                         document.getElementById('login-wrapper').style.display = 'none';
                         document.getElementById('admin-wrapper').style.display = 'flex';
@@ -293,183 +484,440 @@
                 } else {
                     err.style.display = 'block';
                 }
-            } catch (error) {
-                console.error("Error al conectar con la API:", error);
-                alert("No se pudo establecer conexión con el servidor en el puerto 3000.");
-            }
+            } catch (error) { alert("Error de conexión al servidor."); }
         }
 
         function cerrarSesion() {
-            usuarioSesion = null;
-            asistenciaActualId = null;
+            usuarioSesion = null; asistenciaActualId = null;
             document.getElementById('user-wrapper').style.display = 'none';
             document.getElementById('admin-wrapper').style.display = 'none';
             document.getElementById('login-wrapper').style.display = 'flex';
-            document.getElementById('login-pass').value = '';
-            document.getElementById('login-email').value = '';
+            document.getElementById('login-pass').value = ''; document.getElementById('login-email').value = '';
         }
 
-        // --- REGISTRO DE ASISTENCIAS (INGRESO / SALIDA) ---
+        // --- INGRESO (CON SECTOR) ---
         async function marcarIngresoBD() {
             if (!usuarioSesion) return;
+            const sector = prompt("¿En qué sector del FabLab estarás trabajando hoy?");
+            if (sector === null) return; 
+            
             const horaLocal = new Date().toLocaleTimeString('es-ES', { hour12: false });
             try {
                 const res = await fetch(`${API_URL}/api/asistencias`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        usuario_id: usuarioSesion.id,
-                        hora_local: horaLocal,
-                        tarea_turno: usuarioSesion.tarea_actual || 'Turno Regular'
-                    })
+                    body: JSON.stringify({ usuario_id: usuarioSesion.id, hora_local: horaLocal, tarea_turno: usuarioSesion.tarea_actual || 'Turno Regular', sector: sector || 'General' })
                 });
                 const asistencia = await res.json();
                 asistenciaActualId = asistencia.id;
-
                 document.getElementById('u-btn-ingreso').disabled = true;
                 document.getElementById('u-btn-salida').disabled = false;
                 const badge = document.getElementById('u-badge-estado');
-                badge.textContent = '🟢 Turno Activo';
-                badge.style.background = '#c6f6d5'; badge.style.color = '#22543d';
-                alert("¡Ingreso registrado en PostgreSQL!");
-            } catch (err) {
-                alert("Error al registrar el ingreso.");
-            }
+                badge.textContent = '🟢 Turno Activo'; badge.style.background = '#c6f6d5'; badge.style.color = '#22543d';
+            } catch (err) { alert("Error al registrar el ingreso."); }
         }
 
-        async function marcarSalidaBD() {
-            if (!asistenciaActualId) return;
-            const horaSalida = new Date().toLocaleTimeString('es-ES', { hour12: false });
-            const reporte = prompt("Describe brevemente la actividad realizada:");
+        // --- SALIDA (MODAL Y FOTO) ---
+        function abrirModalSalida() {
+            document.getElementById('modal-salida').style.display = 'flex';
+            document.getElementById('ms-reporte').value = '';
+            document.getElementById('ms-foto').value = '';
+        }
+        function cerrarModalSalida() { document.getElementById('modal-salida').style.display = 'none'; }
 
+        async function confirmarSalidaBD() {
+            if (!asistenciaActualId) return;
+            const reporte = document.getElementById('ms-reporte').value.trim();
+            const completada = document.getElementById('ms-completada').value;
+            const archivoFoto = document.getElementById('ms-foto').files[0];
+
+            if (!reporte) { alert("Debes escribir un reporte obligatorio."); return; }
+
+            let fotoBase64 = null;
+            if (archivoFoto) {
+                if(archivoFoto.size > 8 * 1024 * 1024) {
+                    alert("La imagen es demasiado grande. Intenta con una menor a 8MB."); return;
+                }
+                fotoBase64 = await leerArchivoComoBase64(archivoFoto);
+            }
+
+            const horaSalida = new Date().toLocaleTimeString('es-ES', { hour12: false });
+            
             try {
                 await fetch(`${API_URL}/api/asistencias/${asistenciaActualId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        hora_salida: horaSalida,
-                        tarea_completada: 'Si',
-                        reporte_usuario: reporte || 'Sin reporte'
-                    })
+                    body: JSON.stringify({ hora_salida: horaSalida, tarea_completada: completada, reporte_usuario: reporte, imagen_prueba: fotoBase64 })
                 });
-
+                cerrarModalSalida();
                 document.getElementById('u-btn-ingreso').disabled = false;
                 document.getElementById('u-btn-salida').disabled = true;
                 const badge = document.getElementById('u-badge-estado');
-                badge.textContent = '🔴 Fuera de turno';
-                badge.style.background = '#edf2f7'; badge.style.color = '#4a5568';
-                alert("¡Salida registrada exitosamente!");
-            } catch (err) {
-                alert("Error al registrar la salida.");
-            }
+                badge.textContent = '🔴 Fuera de turno'; badge.style.background = '#edf2f7'; badge.style.color = '#4a5568';
+            } catch (err) { alert("Error al registrar la salida. Asegúrate que la foto no sea inmensa."); }
         }
 
-        // --- CARGAR DATOS EN EL PANEL ADMINISTRADOR ---
+        // --- ADMIN CARGA GENERAL ---
         async function cargarDatosAdminBD() {
             try {
-                const resUsuarios = await fetch(`${API_URL}/api/usuarios`);
-                const usuarios = await resUsuarios.json();
+                const [resUsuarios, resAsist] = await Promise.all([ fetch(`${API_URL}/api/usuarios`), fetch(`${API_URL}/api/asistencias_globales`) ]);
+                globalUsuarios = await resUsuarios.json();
+                globalAsistencias = await resAsist.json();
 
-                const tbodyBecarios = document.getElementById('tbody-becarios');
-                const tbodyVoluntarios = document.getElementById('tbody-voluntarios');
-
-                tbodyBecarios.innerHTML = '';
-                tbodyVoluntarios.innerHTML = '';
-
-                usuarios.forEach(u => {
-                    const row = `<tr><td>${u.nombre_completo}</td><td>${u.registro_universitario}</td><td>${u.tarea_actual || 'Sin asignar'}</td><td>${u.telefono || 'N/A'}</td></tr>`;
-                    if (u.rol === 'becario') tbodyBecarios.innerHTML += row;
-                    else if (u.rol === 'voluntario') tbodyVoluntarios.innerHTML += row;
-                });
-
-                if (tbodyBecarios.innerHTML === '') tbodyBecarios.innerHTML = '<tr><td colspan="4" style="text-align:center;">Sin becarios registrados.</td></tr>';
-                if (tbodyVoluntarios.innerHTML === '') tbodyVoluntarios.innerHTML = '<tr><td colspan="4" style="text-align:center;">Sin voluntarios registrados.</td></tr>';
-
-                // Cargar asistencias globales
-                const resAsist = await fetch(`${API_URL}/api/asistencias_globales`);
-                const asistencias = await resAsist.json();
-
-                const tbodyReportes = document.getElementById('tbody-reportes');
-                const tbodyHoras = document.getElementById('tbody-horas');
-                const tbodyHistorial = document.getElementById('tbody-historial');
-
-                tbodyReportes.innerHTML = '';
-                tbodyHoras.innerHTML = '';
-                tbodyHistorial.innerHTML = '';
-
-                asistencias.forEach(a => {
-                    const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
-                    const fila = `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.ci || a.registro_universitario}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td>${a.reporte_usuario || a.tarea_realizada || 'Sin reporte'}</td></tr>`;
-                    
-                    tbodyReportes.innerHTML += fila;
-                    tbodyHoras.innerHTML += fila;
-                    tbodyHistorial.innerHTML += fila;
-                });
-
-            } catch (err) {
-                console.error("Error al cargar datos desde la API:", err);
-            }
+                renderizarVistaRapida(); renderizarReportes(); ejecutarBusquedaHoras(); 
+                filtrarHistorial(); ejecutarBusquedaInfoPersonal(); renderizarSelectAsignacion();
+                renderizarTareasVigentes(); renderizarFotos(); renderizarPerfiles();
+            } catch (err) { console.error("Error al cargar datos:", err); }
         }
 
-        // --- CREAR USUARIO EN LA BASE DE DATOS ---
-        async function guardarUsuarioBD() {
-            const payload = {
-                rol: document.getElementById('nu-rango').value,
-                registro_universitario: document.getElementById('nu-registro').value.trim(),
-                correo_inst: document.getElementById('nu-correo-inst').value.trim(),
-                nombre_completo: document.getElementById('nu-nombre').value.trim(),
-                ci: document.getElementById('nu-ci').value.trim(),
-                telefono: document.getElementById('nu-tel-personal').value.trim(),
-                telefono_ref: document.getElementById('nu-tel-ref').value.trim(),
-                parentesco_ref: document.getElementById('nu-parentesco-ref').value.trim(),
-                correo_pers: document.getElementById('nu-correo-pers').value.trim(),
-                direccion: document.getElementById('nu-vivienda').value.trim(),
-                sangre: document.getElementById('nu-sangre').value.trim(),
-                genero: document.getElementById('nu-genero').value.trim(),
-                fecha_nacimiento: document.getElementById('nu-fecha-nac').value || null
-            };
+        // --- TAREAS VIGENTES ---
+        function renderizarTareasVigentes() {
+            const contenedor = document.getElementById('contenedor-tareas-vigentes');
+            contenedor.innerHTML = '';
+            
+            const tareasAgrupadas = {};
+            globalUsuarios.forEach(u => {
+                if (u.tarea_actual && u.tarea_actual !== 'Sin asignar') {
+                    if (!tareasAgrupadas[u.tarea_actual]) tareasAgrupadas[u.tarea_actual] = [];
+                    tareasAgrupadas[u.tarea_actual].push(u);
+                }
+            });
 
-            if (!payload.registro_universitario || !payload.correo_inst || !payload.nombre_completo) {
-                alert("Por favor, llene al menos Nombre, Registro y Correo Institucional.");
+            if (Object.keys(tareasAgrupadas).length === 0) {
+                contenedor.innerHTML = '<p style="color: #718096;">No hay tareas vigentes asignadas en este momento.</p>';
                 return;
             }
 
-            try {
-                const res = await fetch(`${API_URL}/api/usuarios`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            for (const [tareaDesc, usuariosArray] of Object.entries(tareasAgrupadas)) {
+                const nombres = usuariosArray.map(u => u.nombre_completo).join(', ');
+                const idsString = usuariosArray.map(u => u.id).join(',');
+                const tareaEncoded = encodeURIComponent(tareaDesc);
 
-                if (res.ok) {
-                    alert("¡Usuario creado exitosamente en la base de datos de PostgreSQL!");
-                    document.querySelectorAll('.form-grid input').forEach(input => input.value = '');
-                    cargarDatosAdminBD();
-                } else {
-                    alert("Ocurrió un error al guardar el usuario.");
-                }
-            } catch (err) {
-                alert("No se pudo conectar con el servidor.");
+                contenedor.innerHTML += `
+                    <div class="tarea-vigente-card">
+                        <h4>${tareaDesc}</h4>
+                        <p><strong>👥 Asignada a:</strong> ${nombres}</p>
+                        <div>
+                            <button class="tv-btn tv-btn-edit" onclick="editarTareaVigente('${tareaEncoded}', '${idsString}')">✏️ Editar</button>
+                            <button class="tv-btn tv-btn-add" onclick="agregarPersonasATarea('${tareaEncoded}')">➕ Añadir Personas</button>
+                            <button class="tv-btn tv-btn-del" onclick="eliminarTareaVigente('${idsString}')">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                `;
             }
         }
 
-        // --- NAVEGACIÓN ADMINISTRADOR ---
+        async function editarTareaVigente(tareaEncoded, idsString) {
+            const tareaAntigua = decodeURIComponent(tareaEncoded);
+            const nuevaTarea = prompt("Edita la descripción de la tarea:", tareaAntigua);
+            if (!nuevaTarea || nuevaTarea.trim() === '' || nuevaTarea === tareaAntigua) return;
+            
+            const ids = idsString.split(',');
+            try {
+                for (let id of ids) {
+                    await fetch(`${API_URL}/api/usuarios/${id}/tarea`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tarea_actual: nuevaTarea })
+                    });
+                }
+                cargarDatosAdminBD();
+            } catch(e) { alert("Error al editar la tarea."); }
+        }
+
+        async function eliminarTareaVigente(idsString) {
+            if (!confirm("¿Seguro que deseas eliminar esta tarea? Los usuarios quedarán libres (Sin asignar).")) return;
+            
+            const ids = idsString.split(',');
+            try {
+                for (let id of ids) {
+                    await fetch(`${API_URL}/api/usuarios/${id}/tarea`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tarea_actual: 'Sin asignar' })
+                    });
+                }
+                cargarDatosAdminBD();
+            } catch(e) { alert("Error al eliminar la tarea."); }
+        }
+
+        function agregarPersonasATarea(tareaEncoded) {
+            const tarea = decodeURIComponent(tareaEncoded);
+            document.getElementById('asignar-desc').value = tarea;
+            document.getElementById('asignar-usuarios').focus();
+            alert("He copiado la tarea en la caja de arriba. Selecciona a las nuevas personas en la lista y presiona 'Asignar Tarea'.");
+        }
+
+        function renderizarSelectAsignacion() {
+            const select = document.getElementById('asignar-usuarios');
+            select.innerHTML = '';
+            globalUsuarios.filter(u => u.rol !== 'admin').forEach(u => {
+                select.innerHTML += `<option value="${u.id}">${u.nombre_completo} (${u.rol})</option>`;
+            });
+        }
+
+        async function asignarTareaMultiple() {
+            const select = document.getElementById('asignar-usuarios');
+            const seleccionados = Array.from(select.selectedOptions).map(opt => opt.value);
+            const desc = document.getElementById('asignar-desc').value.trim();
+
+            if (seleccionados.length === 0 || !desc) { alert("Selecciona al menos un usuario y escribe la tarea."); return; }
+            
+            try {
+                for(let id of seleccionados) {
+                    await fetch(`${API_URL}/api/usuarios/${id}/tarea`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tarea_actual: desc })
+                    });
+                }
+                alert("¡Tarea asignada con éxito a los seleccionados!");
+                document.getElementById('asignar-desc').value = '';
+                for (let i = 0; i < select.options.length; i++) select.options[i].selected = false;
+                cargarDatosAdminBD();
+            } catch (err) { alert("Error asignando tareas."); }
+        }
+
+        // --- PRUEBAS FOTOGRÁFICAS (ACTUALIZADO: VER Y DESCARGAR) ---
+        function abrirFotoAmpliada(src) {
+            document.getElementById('img-ampliada').src = src;
+            document.getElementById('modal-ver-foto').style.display = 'flex';
+        }
+
+        function renderizarFotos() {
+            const contenedor = document.getElementById('contenedor-fotos');
+            const qNombre = document.getElementById('filtro-foto-nombre').value.toLowerCase();
+            const qFecha = document.getElementById('filtro-foto-fecha').value;
+            contenedor.innerHTML = '';
+
+            let filtradas = globalAsistencias.filter(a => a.imagen_prueba);
+            if (qFecha) filtradas = filtradas.filter(a => a.fecha && a.fecha.startsWith(qFecha));
+            if (qNombre) filtradas = filtradas.filter(a => a.nombre_completo.toLowerCase().includes(qNombre));
+
+            filtradas.forEach(a => {
+                const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
+                const nombreArchivoDescarga = `Prueba_${a.nombre_completo.replace(/\s+/g, '_')}_${fechaFmt}.png`;
+
+                contenedor.innerHTML += `
+                    <div class="foto-card">
+                        <img src="${a.imagen_prueba}" alt="Prueba" title="Haz clic para ver en grande" onclick="abrirFotoAmpliada('${a.imagen_prueba}')">
+                        <p><strong>${a.nombre_completo}</strong></p>
+                        <p>📅 ${fechaFmt}</p>
+                        <p>📝 Tarea: ${a.tarea_realizada || 'N/A'}</p>
+                        <a href="${a.imagen_prueba}" download="${nombreArchivoDescarga}" style="display:inline-block; margin-top:10px; background:#319795; color:white; padding:8px 12px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold;">⬇️ Descargar Foto</a>
+                    </div>`;
+            });
+            if (contenedor.innerHTML === '') contenedor.innerHTML = '<p style="grid-column: 1/-1;">No hay fotos subidas en esta fecha o búsqueda.</p>';
+        }
+
+        // --- GESTIÓN DE PERFILES Y CONEXIONES REALES ---
+        function renderizarPerfiles() {
+            const tb = document.getElementById('tbody-perfiles');
+            tb.innerHTML = '';
+            globalUsuarios.forEach(u => {
+                tb.innerHTML += `
+                    <tr>
+                        <td>${u.nombre_completo}</td><td>${u.registro_universitario}</td><td>${u.rol}</td><td>${u.correo_inst || 'N/A'}</td>
+                        <td>
+                            <button style="background:#3182ce; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;" onclick="abrirModalEditar(${u.id})">Editar</button>
+                            <button style="background:#e53e3e; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;" onclick="eliminarPerfil(${u.id})">Borrar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function abrirModalEditar(id) {
+            const u = globalUsuarios.find(x => x.id === id);
+            if(!u) return;
+            document.getElementById('me-id').value = u.id;
+            document.getElementById('me-nombre').value = u.nombre_completo;
+            document.getElementById('me-tel').value = u.telefono || '';
+            document.getElementById('me-dir').value = u.direccion || '';
+            document.getElementById('me-rol').value = u.rol;
+            document.getElementById('modal-editar').style.display = 'flex';
+        }
+        function cerrarModalEditar() { document.getElementById('modal-editar').style.display = 'none'; }
+
+        async function guardarEdicionPerfil() {
+            const id = document.getElementById('me-id').value;
+            const payload = {
+                nombre_completo: document.getElementById('me-nombre').value,
+                telefono: document.getElementById('me-tel').value,
+                direccion: document.getElementById('me-dir').value,
+                rol: document.getElementById('me-rol').value
+            };
+            try {
+                await fetch(`${API_URL}/api/usuarios/${id}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                alert("¡Perfil actualizado correctamente en la Base de Datos!");
+                cerrarModalEditar(); cargarDatosAdminBD();
+            } catch(e) { alert("Error al editar."); }
+        }
+
+        async function eliminarPerfil(id) {
+            const pass = prompt("Acción Crítica: Ingrese la contraseña de Administrador para eliminar este perfil:");
+            if (pass !== "ueb123456789") { alert("Contraseña incorrecta. Operación cancelada."); return; }
+            
+            try {
+                await fetch(`${API_URL}/api/usuarios/${id}`, { method: 'DELETE' });
+                alert("¡Perfil eliminado definitivamente del servidor!");
+                cargarDatosAdminBD();
+            } catch(e) { alert("Error al intentar eliminar el perfil."); }
+        }
+
+
+        // --- VISTA RÁPIDA ---
+        function renderizarVistaRapida() {
+            const tbodyBec = document.getElementById('tbody-becarios');
+            const tbodyVol = document.getElementById('tbody-voluntarios');
+            tbodyBec.innerHTML = ''; tbodyVol.innerHTML = '';
+            
+            globalUsuarios.forEach(u => {
+                const turnoActivo = globalAsistencias.find(a => a.usuario_id === u.id && (!a.hora_salida || a.hora_salida === 'En turno'));
+                let horaIngresoText = "---";
+                let estadoBadge = `<span style="color:#e53e3e; font-weight:bold;">🔴 Desconectado</span>`;
+                
+                if (turnoActivo) {
+                    horaIngresoText = turnoActivo.hora_ingreso;
+                    estadoBadge = `<span style="color:#38a169; font-weight:bold;">🟢 En Turno</span>`;
+                }
+
+                const row = `<tr><td>${u.nombre_completo}</td><td>${u.registro_universitario}</td><td>${u.tarea_actual || 'Sin asignar'}</td><td><strong>${horaIngresoText}</strong></td><td>${estadoBadge}</td></tr>`;
+                
+                if (u.rol === 'becario') tbodyBec.innerHTML += row;
+                else if (u.rol === 'voluntario') tbodyVol.innerHTML += row;
+            });
+            if (tbodyBec.innerHTML === '') tbodyBec.innerHTML = '<tr><td colspan="5" style="text-align:center;">Sin registros.</td></tr>';
+            if (tbodyVol.innerHTML === '') tbodyVol.innerHTML = '<tr><td colspan="5" style="text-align:center;">Sin registros.</td></tr>';
+        }
+
+        function renderizarReportes() {
+            const tbRsu = document.getElementById('tbody-reportes-rsu');
+            const tbBec = document.getElementById('tbody-reportes-becarios');
+            tbRsu.innerHTML = ''; tbBec.innerHTML = '';
+            globalAsistencias.forEach(a => {
+                const usuario = globalUsuarios.find(u => u.id === a.usuario_id);
+                if(!usuario) return;
+                const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
+                const fila = `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.sector || 'N/A'}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td>${a.reporte_usuario || a.tarea_realizada || 'Sin reporte'}</td></tr>`;
+                if (usuario.rol === 'voluntario') tbRsu.innerHTML += fila;
+                else if (usuario.rol === 'becario') tbBec.innerHTML += fila;
+            });
+            if (tbRsu.innerHTML === '') tbRsu.innerHTML = '<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>';
+            if (tbBec.innerHTML === '') tbBec.innerHTML = '<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>';
+        }
+
+        function ejecutarBusquedaInfoPersonal() {
+            const query = document.getElementById('busqueda-info').value.toLowerCase();
+            const contenedor = document.getElementById('contenedor-info-personal');
+            contenedor.innerHTML = '';
+            const filtrados = globalUsuarios.filter(u => u.nombre_completo.toLowerCase().includes(query) || u.registro_universitario.includes(query));
+            if (filtrados.length === 0) { contenedor.innerHTML = '<p>No se encontraron usuarios.</p>'; return; }
+            filtrados.forEach(u => {
+                let minsTotal = 0;
+                globalAsistencias.forEach(a => { if (a.usuario_id === u.id) { minsTotal += calcularDiferenciaHoras(a.hora_ingreso, a.hora_salida).mins; } });
+                const html = `
+                <div style="background: white; border: 1px solid #dfe1e6; border-left: 5px solid #1a365d; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
+                    <h3 style="color: #1a365d;">${u.nombre_completo} <span style="font-size:14px; color:gray;">(${u.rol.toUpperCase()})</span></h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px; font-size:14px;">
+                        <p><strong>Registro:</strong> ${u.registro_universitario}</p><p><strong>C.I.:</strong> ${u.ci || 'N/A'}</p>
+                        <p><strong>Correo Inst:</strong> ${u.correo_inst || 'N/A'}</p><p><strong>Correo Pers:</strong> ${u.correo_pers || 'N/A'}</p>
+                        <p><strong>Teléfono:</strong> ${u.telefono || 'N/A'}</p><p><strong>Dirección:</strong> ${u.direccion || 'N/A'}</p>
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
+                        <strong style="color: #319795; font-size: 16px;">🔥 Total Horas RSU: ${minutosATexto(minsTotal)}</strong>
+                    </div>
+                </div>`;
+                contenedor.innerHTML += html;
+            });
+        }
+
+        function ejecutarBusquedaHoras() {
+            const qNombre = document.getElementById('busqueda-horas-nombre').value.toLowerCase();
+            const qFecha = document.getElementById('busqueda-horas-fecha').value;
+            const tb = document.getElementById('tbody-horas');
+            const tarjeta = document.getElementById('mini-tarjeta-rsu');
+            tb.innerHTML = '';
+            
+            let filtradas = globalAsistencias;
+            if (qFecha) filtradas = filtradas.filter(a => a.fecha && a.fecha.startsWith(qFecha));
+            if (qNombre) filtradas = filtradas.filter(a => a.nombre_completo.toLowerCase().includes(qNombre) || (a.registro_universitario && a.registro_universitario.includes(qNombre)));
+
+            if (qNombre.length > 2 && filtradas.length > 0) {
+                const idBuscado = filtradas[0].usuario_id;
+                let minsAcumulados = 0;
+                globalAsistencias.forEach(a => { if (a.usuario_id === idBuscado) minsAcumulados += calcularDiferenciaHoras(a.hora_ingreso, a.hora_salida).mins; });
+                document.getElementById('rsu-nombre-resumen').innerText = filtradas[0].nombre_completo;
+                document.getElementById('rsu-total-resumen').innerText = minutosATexto(minsAcumulados);
+                tarjeta.style.display = 'block';
+            } else { tarjeta.style.display = 'none'; }
+
+            filtradas.forEach(a => {
+                const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
+                const calculo = calcularDiferenciaHoras(a.hora_ingreso, a.hora_salida);
+                const fila = `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td><strong>${calculo.texto}</strong></td></tr>`;
+                tb.innerHTML += fila;
+            });
+            if (tb.innerHTML === '') tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay registros.</td></tr>';
+        }
+
+        function filtrarHistorial() {
+            const qNombre = document.getElementById('historial-nombre').value.toLowerCase();
+            const qDia = document.getElementById('historial-dia').value;
+            const qMes = document.getElementById('historial-mes').value;
+            const tb = document.getElementById('tbody-historial');
+            tb.innerHTML = '';
+
+            let filtradas = globalAsistencias;
+            if (qNombre) filtradas = filtradas.filter(a => a.nombre_completo.toLowerCase().includes(qNombre) || (a.registro_universitario && a.registro_universitario.includes(qNombre)));
+            if (qDia) filtradas = filtradas.filter(a => a.fecha && a.fecha.startsWith(qDia));
+            if (qMes) filtradas = filtradas.filter(a => a.fecha && a.fecha.startsWith(qMes));
+
+            filtradas.forEach(a => {
+                const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
+                const fila = `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.registro_universitario || 'N/A'}</td><td>${a.sector || 'N/A'}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td>${a.reporte_usuario || a.tarea_realizada || 'Sin reporte'}</td></tr>`;
+                tb.innerHTML += fila;
+            });
+            if (tb.innerHTML === '') tb.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay resultados en el historial.</td></tr>';
+        }
+
+        function generarPDF(tipo) {
+            const elemento = document.getElementById('tabla-exportar-pdf');
+            const opciones = { margin: 0.5, filename: tipo === '6meses' ? 'Historial_6Meses.pdf' : 'Historial_Filtrado.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' } };
+            if (tipo === '6meses') { document.getElementById('historial-nombre').value = ''; document.getElementById('historial-dia').value = ''; document.getElementById('historial-mes').value = ''; filtrarHistorial(); }
+            html2pdf().set(opciones).from(elemento).save();
+        }
+
+        async function guardarUsuarioBD() {
+            const regUniv = document.getElementById('nu-registro').value.trim();
+            const correoInput = document.getElementById('nu-correo-inst').value.trim();
+            const correoFinal = correoInput !== '' ? correoInput : `${regUniv}@ueb.edu.bo`;
+            const payload = {
+                rol: document.getElementById('nu-rango').value, registro_universitario: regUniv, correo_inst: correoFinal, nombre_completo: document.getElementById('nu-nombre').value.trim(),
+                ci: document.getElementById('nu-ci').value.trim(), telefono: document.getElementById('nu-tel-personal').value.trim(), telefono_ref: document.getElementById('nu-tel-ref').value.trim(),
+                parentesco_ref: document.getElementById('nu-parentesco-ref').value.trim(), correo_pers: document.getElementById('nu-correo-pers').value.trim(), direccion: document.getElementById('nu-vivienda').value.trim(),
+                sangre: document.getElementById('nu-sangre').value.trim(), genero: document.getElementById('nu-genero').value.trim(), fecha_nacimiento: document.getElementById('nu-fecha-nac').value || null
+            };
+
+            if (!payload.registro_universitario || !payload.nombre_completo) { alert("Por favor, llene al menos Nombre y Registro Universitario."); return; }
+
+            try {
+                const res = await fetch(`${API_URL}/api/usuarios`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (res.ok) {
+                    alert(`¡Usuario creado exitosamente!\n\nProporciona estas credenciales al usuario para que inicie sesión:\n📧 Correo Institucional: ${correoFinal}\n🔑 Contraseña (Registro): ${regUniv}`);
+                    document.querySelectorAll('.form-grid input').forEach(input => input.value = ''); cargarDatosAdminBD();
+                } else { const errorBD = await res.json(); alert(`Error de Base de Datos:\n${errorBD.error || 'Datos duplicados.'}`); }
+            } catch (err) { alert("Error servidor."); }
+        }
+
         let mapaAd;
         function cambiarVista(idVista, btnElement) {
             document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.a-menu li').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(idVista).classList.remove('hidden');
             btnElement.classList.add('active');
-            
             document.getElementById('mobile-title').innerText = btnElement.innerText.replace(/[^\w\s]/gi, '').trim();
             document.getElementById('sidebar').classList.remove('open');
-
             if(idVista === 'vista-mapa') {
-                if(!mapaAd) {
-                    mapaAd = L.map('mapa-container').setView([-17.835, -63.2045], 16);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaAd);
-                }
+                if(!mapaAd) { mapaAd = L.map('mapa-container').setView([-17.835, -63.2045], 16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaAd); }
                 setTimeout(() => { mapaAd.invalidateSize(); }, 200);
             }
         }
