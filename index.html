@@ -87,7 +87,6 @@
         .foto-card img:hover { opacity: 0.8; }
         .foto-card p { font-size: 13px; color: #4a5568; margin-bottom: 5px; }
 
-        /* Estilo para Tareas Vigentes */
         .tarea-vigente-card { background: white; border: 1px solid #dfe1e6; border-left: 5px solid #3182ce; padding: 15px; margin-bottom: 10px; border-radius: 6px; }
         .tarea-vigente-card h4 { color: #2c5282; margin-bottom: 5px; font-size: 16px; }
         .tarea-vigente-card p { font-size: 13px; color: #4a5568; margin-bottom: 12px; }
@@ -110,6 +109,21 @@
         <div style="position:relative; width: 90%; max-width: 800px; text-align: center;">
             <img id="img-ampliada" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
             <button style="position:absolute; top:-15px; right:-15px; background:#e53e3e; color:white; border:none; border-radius:50%; width:35px; height:35px; font-weight:bold; cursor:pointer; font-size:16px;" onclick="document.getElementById('modal-ver-foto').style.display='none'">X</button>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVO: SELECCIÓN DE MAPA AL INGRESAR -->
+    <div id="modal-ingreso-mapa" class="modal-overlay">
+        <div class="modal-box" style="max-width: 600px;">
+            <h3>Registrar Ingreso</h3>
+            <label>¿En qué sector estarás hoy?</label>
+            <input type="text" id="mi-sector" placeholder="Ej: Laboratorio 3D, Mesas de trabajo..." required>
+            <label style="margin-top: 10px;">Toca el mapa para fijar tu ubicación exacta (Puntero azul):</label>
+            <div id="mapa-ingreso" style="height: 250px; width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #dfe1e6;"></div>
+            <div class="btn-row">
+                <button style="background: #a0aec0;" onclick="cerrarModalIngreso()">Cancelar</button>
+                <button style="background: #38a169;" onclick="confirmarIngresoBD()">Confirmar Ingreso</button>
+            </div>
         </div>
     </div>
 
@@ -159,14 +173,14 @@
     </div>
 
     <!-- PANTALLA DE LOGIN -->
-    <div id="login-wrapper" class="wrapper" style="display: flex;">
+    <div id="login-wrapper" class="wrapper">
         <div class="login-box">
             <img src="logofablabUEB-removebg-preview.png" alt="Logo UEB" onerror="this.style.display='none'">
             <h2 style="color: #1a365d; margin-bottom: 20px;">INICIO DE SESIÓN</h2>
             <input type="email" id="login-email" placeholder="Correo Institucional">
             <input type="password" id="login-pass" placeholder="Registro Universitario / Contraseña">
             <button onclick="iniciarSesion()">Ingresar</button>
-            <p id="login-error" style="color:red; display:none; margin-top:15px; font-weight:bold;">Credenciales incorrectas o usuario no encontrado.</p>
+            <p id="login-error" style="color:red; display:none; margin-top:15px; font-weight:bold;">Credenciales incorrectas o conexión fallida.</p>
         </div>
     </div>
 
@@ -189,7 +203,7 @@
                     <p id="u-assigned-main">Sin asignar</p>
                 </div>
             </div>
-            <button class="u-btn u-btn-green" id="u-btn-ingreso" onclick="marcarIngresoBD()">Marcar Ingreso</button>
+            <button class="u-btn u-btn-green" id="u-btn-ingreso" onclick="abrirModalIngreso()">Marcar Ingreso</button>
             <button class="u-btn u-btn-red" id="u-btn-salida" onclick="abrirModalSalida()" disabled>Marcar Salida</button>
             <button class="u-btn u-btn-outline" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
@@ -224,7 +238,6 @@
             </div>
 
             <div class="a-content">
-                <!-- 1. VISTA RÁPIDA -->
                 <section id="vista-rapida" class="admin-view">
                     <div class="card">
                         <h2 class="card-title">Resumen del Día - Usuarios en el FabLab</h2>
@@ -246,7 +259,6 @@
                     </div>
                 </section>
 
-                <!-- 2. INFORMACIÓN PERSONAL -->
                 <section id="vista-info-personal" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Información Personal y Perfiles</h2>
@@ -259,7 +271,6 @@
                     </div>
                 </section>
 
-                <!-- 3. ASIGNAR TAREAS -->
                 <section id="vista-asignar" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Asignación de Nuevas Tareas</h2>
@@ -275,7 +286,6 @@
                         </div>
                         <button class="u-btn u-btn-green" style="margin-top: 15px;" onclick="asignarTareaMultiple()">Asignar Tarea a Seleccionados</button>
                     </div>
-
                     <div class="card" style="margin-top: 20px;">
                         <h2 class="card-title">📌 Tareas Vigentes (En progreso)</h2>
                         <div id="contenedor-tareas-vigentes">
@@ -284,7 +294,6 @@
                     </div>
                 </section>
 
-                <!-- 4. PRUEBAS FOTOGRÁFICAS -->
                 <section id="vista-fotos" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Galería de Pruebas Fotográficas</h2>
@@ -292,21 +301,19 @@
                             <input type="date" id="filtro-foto-fecha" onchange="renderizarFotos()">
                             <input type="text" id="filtro-foto-nombre" placeholder="Buscar por nombre..." onkeyup="renderizarFotos()">
                         </div>
-                        <div class="foto-grid" id="contenedor-fotos">
-                            <!-- Se llena con JS -->
-                        </div>
+                        <div class="foto-grid" id="contenedor-fotos"></div>
                     </div>
                 </section>
 
-                <!-- MAPA EN VIVO -->
+                <!-- MAPA EN VIVO ADMIN -->
                 <section id="vista-mapa" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Rastreo Georreferenciado (Campus UEB)</h2>
+                        <p style="margin-bottom:10px; color:#718096;">Se muestra la ubicación exacta que marcaron los estudiantes al iniciar su turno.</p>
                         <div id="mapa-container"></div>
                     </div>
                 </section>
 
-                <!-- REPORTES Y BITÁCORAS -->
                 <section id="vista-reportes" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Bitácoras y Reportes Registrados</h2>
@@ -317,7 +324,6 @@
                                 <tbody id="tbody-reportes-rsu"><tr><td colspan="6" style="text-align:center;">Cargando...</td></tr></tbody>
                             </table>
                         </div>
-
                         <h3 style="color:#d69e2e; margin: 15px 0 10px;">🟠 Reportes - Becarios</h3>
                         <div class="table-responsive">
                             <table>
@@ -328,7 +334,6 @@
                     </div>
                 </section>
 
-                <!-- HORAS RSU -->
                 <section id="vista-horas" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Control de Horas RSU</h2>
@@ -349,7 +354,6 @@
                     </div>
                 </section>
 
-                <!-- HISTORIAL GENERAL -->
                 <section id="vista-historial" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Historial General de Actividades</h2>
@@ -369,7 +373,6 @@
                     </div>
                 </section>
 
-                <!-- GESTIÓN DE PERFILES -->
                 <section id="vista-perfiles" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Gestión de Perfiles Creados</h2>
@@ -382,7 +385,6 @@
                     </div>
                 </section>
 
-                <!-- CREAR USUARIO -->
                 <section id="vista-crear" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Registro de Nuevo Usuario</h2>
@@ -424,7 +426,47 @@
         let globalUsuarios = [];
         let globalAsistencias = [];
 
-        // Utilidad: Leer Archivo Base64 (Para Foto)
+        // ======== MEMORIA DE SESIÓN AUTOMÁTICA ========
+        window.onload = () => {
+            const guardado = localStorage.getItem('usuarioSesionFabLab');
+            if (guardado) {
+                usuarioSesion = JSON.parse(guardado);
+                document.getElementById('login-wrapper').style.display = 'none';
+                if (usuarioSesion.rol === 'admin') {
+                    document.getElementById('admin-wrapper').style.display = 'flex';
+                    cargarDatosAdminBD();
+                } else {
+                    document.getElementById('user-wrapper').style.display = 'flex';
+                    document.getElementById('u-display-name').innerText = `Hola, ${usuarioSesion.nombre_completo.split(' ')[0]}`;
+                    document.getElementById('u-display-rank').innerText = `Perfil: ${usuarioSesion.rol}`;
+                    document.getElementById('u-assigned-main').innerText = usuarioSesion.tarea_actual || 'Sin asignar';
+                    verificarEstadoTurno();
+                }
+            } else {
+                document.getElementById('login-wrapper').style.display = 'flex';
+            }
+        };
+
+        async function verificarEstadoTurno() {
+            try {
+                const res = await fetch(`${API_URL}/api/asistencias_globales`);
+                const todas = await res.json();
+                const hoy = new Date().toISOString().split('T')[0];
+                const miTurnoActivo = todas.find(a => a.usuario_id === usuarioSesion.id && (!a.hora_salida || a.hora_salida === 'En turno') && a.fecha && a.fecha.startsWith(hoy));
+
+                if (miTurnoActivo) {
+                    asistenciaActualId = miTurnoActivo.id;
+                    document.getElementById('u-btn-ingreso').disabled = true;
+                    document.getElementById('u-btn-salida').disabled = false;
+                    const badge = document.getElementById('u-badge-estado');
+                    badge.textContent = '🟢 Turno Activo'; badge.style.background = '#c6f6d5'; badge.style.color = '#22543d';
+                }
+            } catch (e) {
+                console.log("No se pudo verificar el turno anterior.");
+            }
+        }
+
+        // Utilidad base64
         function leerArchivoComoBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -433,20 +475,14 @@
                 reader.onerror = error => reject(error);
             });
         }
-
+        function minutosATexto(minsTotales) { return `${Math.floor(minsTotales / 60)}h ${minsTotales % 60}m`; }
         function calcularDiferenciaHoras(ingreso, salida) {
             if (!salida || salida === 'En turno') return { texto: 'En turno', mins: 0 };
             try {
-                const [h1, m1] = ingreso.split(':').map(Number);
-                const [h2, m2] = salida.split(':').map(Number);
-                let diffMins = (h2 * 60 + m2) - (h1 * 60 + m1);
-                if (diffMins < 0) diffMins += (24 * 60);
+                const [h1, m1] = ingreso.split(':').map(Number); const [h2, m2] = salida.split(':').map(Number);
+                let diffMins = (h2 * 60 + m2) - (h1 * 60 + m1); if (diffMins < 0) diffMins += (24 * 60);
                 return { texto: `${Math.floor(diffMins / 60)}h ${diffMins % 60}m`, mins: diffMins };
             } catch(e) { return { texto: '0h 0m', mins: 0 }; }
-        }
-
-        function minutosATexto(minsTotales) {
-            return `${Math.floor(minsTotales / 60)}h ${minsTotales % 60}m`;
         }
 
         setInterval(() => {
@@ -461,6 +497,7 @@
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
             const err = document.getElementById('login-error');
+            err.style.display = 'none';
 
             try {
                 const res = await fetch(`${API_URL}/api/usuarios`);
@@ -468,26 +505,31 @@
                 const usuario = usuarios.find(u => (u.correo_inst === email || u.registro_universitario === email) && u.registro_universitario === pass);
 
                 if (usuario) {
-                    err.style.display = 'none';
                     usuarioSesion = usuario;
+                    localStorage.setItem('usuarioSesionFabLab', JSON.stringify(usuarioSesion)); // Guarda la sesión
+                    
+                    document.getElementById('login-wrapper').style.display = 'none';
                     if (usuario.rol === 'admin') {
-                        document.getElementById('login-wrapper').style.display = 'none';
                         document.getElementById('admin-wrapper').style.display = 'flex';
                         cargarDatosAdminBD();
                     } else {
-                        document.getElementById('login-wrapper').style.display = 'none';
                         document.getElementById('user-wrapper').style.display = 'flex';
                         document.getElementById('u-display-name').innerText = `Hola, ${usuario.nombre_completo.split(' ')[0]}`;
                         document.getElementById('u-display-rank').innerText = `Perfil: ${usuario.rol}`;
                         document.getElementById('u-assigned-main').innerText = usuario.tarea_actual || 'Sin asignar';
+                        verificarEstadoTurno();
                     }
                 } else {
                     err.style.display = 'block';
                 }
-            } catch (error) { alert("Error de conexión al servidor."); }
+            } catch (error) { 
+                err.innerText = "Error: Verifica que el servidor o el túnel estén encendidos.";
+                err.style.display = 'block'; 
+            }
         }
 
         function cerrarSesion() {
+            localStorage.removeItem('usuarioSesionFabLab');
             usuarioSesion = null; asistenciaActualId = null;
             document.getElementById('user-wrapper').style.display = 'none';
             document.getElementById('admin-wrapper').style.display = 'none';
@@ -495,21 +537,58 @@
             document.getElementById('login-pass').value = ''; document.getElementById('login-email').value = '';
         }
 
-        // --- INGRESO (CON SECTOR) ---
-        async function marcarIngresoBD() {
+        // --- INGRESO (CON MAPA ESTUDIANTE) ---
+        let mapaIngreso;
+        let marcadorIngreso;
+        let coordsIngreso = null;
+
+        function abrirModalIngreso() {
+            document.getElementById('modal-ingreso-mapa').style.display = 'flex';
+            document.getElementById('mi-sector').value = '';
+            coordsIngreso = null;
+
+            if (!mapaIngreso) {
+                mapaIngreso = L.map('mapa-ingreso').setView([-17.835, -63.2045], 18);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaIngreso);
+
+                mapaIngreso.on('click', function(e) {
+                    coordsIngreso = e.latlng;
+                    if (marcadorIngreso) {
+                        marcadorIngreso.setLatLng(coordsIngreso);
+                    } else {
+                        marcadorIngreso = L.marker(coordsIngreso).addTo(mapaIngreso);
+                    }
+                });
+            }
+            setTimeout(() => { mapaIngreso.invalidateSize(); }, 300);
+        }
+
+        function cerrarModalIngreso() { document.getElementById('modal-ingreso-mapa').style.display = 'none'; }
+
+        async function confirmarIngresoBD() {
             if (!usuarioSesion) return;
-            const sector = prompt("¿En qué sector del FabLab estarás trabajando hoy?");
-            if (sector === null) return; 
+            const sector = document.getElementById('mi-sector').value.trim();
+            if (!sector) { alert("Por favor, escribe el sector donde estarás."); return; }
+            if (!coordsIngreso) { alert("Por favor, toca el mapa para marcar tu ubicación exacta."); return; }
             
             const horaLocal = new Date().toLocaleTimeString('es-ES', { hour12: false });
             try {
                 const res = await fetch(`${API_URL}/api/asistencias`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario_id: usuarioSesion.id, hora_local: horaLocal, tarea_turno: usuarioSesion.tarea_actual || 'Turno Regular', sector: sector || 'General' })
+                    body: JSON.stringify({ 
+                        usuario_id: usuarioSesion.id, 
+                        hora_local: horaLocal, 
+                        tarea_turno: usuarioSesion.tarea_actual || 'Turno Regular', 
+                        sector: sector,
+                        latitud: coordsIngreso.lat,
+                        longitud: coordsIngreso.lng
+                    })
                 });
                 const asistencia = await res.json();
                 asistenciaActualId = asistencia.id;
+                
+                cerrarModalIngreso();
                 document.getElementById('u-btn-ingreso').disabled = true;
                 document.getElementById('u-btn-salida').disabled = false;
                 const badge = document.getElementById('u-badge-estado');
@@ -517,7 +596,7 @@
             } catch (err) { alert("Error al registrar el ingreso."); }
         }
 
-        // --- SALIDA (MODAL Y FOTO) ---
+        // --- SALIDA ---
         function abrirModalSalida() {
             document.getElementById('modal-salida').style.display = 'flex';
             document.getElementById('ms-reporte').value = '';
@@ -535,14 +614,11 @@
 
             let fotoBase64 = null;
             if (archivoFoto) {
-                if(archivoFoto.size > 8 * 1024 * 1024) {
-                    alert("La imagen es demasiado grande. Intenta con una menor a 8MB."); return;
-                }
+                if(archivoFoto.size > 8 * 1024 * 1024) { alert("La imagen es demasiado grande. Máximo 8MB."); return; }
                 fotoBase64 = await leerArchivoComoBase64(archivoFoto);
             }
 
             const horaSalida = new Date().toLocaleTimeString('es-ES', { hour12: false });
-            
             try {
                 await fetch(`${API_URL}/api/asistencias/${asistenciaActualId}`, {
                     method: 'PUT',
@@ -552,9 +628,10 @@
                 cerrarModalSalida();
                 document.getElementById('u-btn-ingreso').disabled = false;
                 document.getElementById('u-btn-salida').disabled = true;
+                asistenciaActualId = null;
                 const badge = document.getElementById('u-badge-estado');
                 badge.textContent = '🔴 Fuera de turno'; badge.style.background = '#edf2f7'; badge.style.color = '#4a5568';
-            } catch (err) { alert("Error al registrar la salida. Asegúrate que la foto no sea inmensa."); }
+            } catch (err) { alert("Error al registrar la salida."); }
         }
 
         // --- ADMIN CARGA GENERAL ---
@@ -567,7 +644,53 @@
                 renderizarVistaRapida(); renderizarReportes(); ejecutarBusquedaHoras(); 
                 filtrarHistorial(); ejecutarBusquedaInfoPersonal(); renderizarSelectAsignacion();
                 renderizarTareasVigentes(); renderizarFotos(); renderizarPerfiles();
+                
+                // Si la pestaña del mapa está abierta, actualízalo
+                if(document.getElementById('vista-mapa').classList.contains('hidden') === false) {
+                    renderizarMapaAdmin();
+                }
             } catch (err) { console.error("Error al cargar datos:", err); }
+        }
+
+        // --- MAPA ADMIN (AGRUPACIÓN DE MARCADORES) ---
+        let mapaAd;
+        let marcadoresAdmin = [];
+
+        function renderizarMapaAdmin() {
+            if (!mapaAd) {
+                mapaAd = L.map('mapa-container').setView([-17.835, -63.2045], 18);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaAd);
+            }
+            setTimeout(() => { mapaAd.invalidateSize(); }, 300);
+
+            // Limpiar marcadores viejos
+            marcadoresAdmin.forEach(m => mapaAd.removeLayer(m));
+            marcadoresAdmin = [];
+
+            // Filtrar solo los que están en turno y tienen coordenadas
+            const activos = globalAsistencias.filter(a => (!a.hora_salida || a.hora_salida === 'En turno') && a.latitud && a.longitud);
+            const agrupados = {};
+
+            // Agrupar por coordenadas exactas
+            activos.forEach(a => {
+                const clave = `${a.latitud},${a.longitud}`;
+                if (!agrupados[clave]) agrupados[clave] = [];
+                agrupados[clave].push(a);
+            });
+
+            // Dibujar agrupados
+            for (const clave in agrupados) {
+                const usuarios = agrupados[clave];
+                const [lat, lng] = clave.split(',');
+                
+                let nombresHTML = usuarios.map(u => `• <b>${u.nombre_completo}</b> <i>(${u.sector})</i>`).join('<br>');
+                let titulo = usuarios.length > 1 ? `📍 ${usuarios.length} Personas en este punto:` : `📍 Usuario en turno:`;
+
+                const marker = L.marker([parseFloat(lat), parseFloat(lng)]).addTo(mapaAd)
+                    .bindPopup(`<div style="font-size:14px; min-width:180px;"><b>${titulo}</b><br><div style="margin-top:8px;">${nombresHTML}</div></div>`);
+                
+                marcadoresAdmin.push(marker);
+            }
         }
 
         // --- TAREAS VIGENTES ---
@@ -626,7 +749,6 @@
 
         async function eliminarTareaVigente(idsString) {
             if (!confirm("¿Seguro que deseas eliminar esta tarea? Los usuarios quedarán libres (Sin asignar).")) return;
-            
             const ids = idsString.split(',');
             try {
                 for (let id of ids) {
@@ -649,9 +771,7 @@
         function renderizarSelectAsignacion() {
             const select = document.getElementById('asignar-usuarios');
             select.innerHTML = '';
-            globalUsuarios.filter(u => u.rol !== 'admin').forEach(u => {
-                select.innerHTML += `<option value="${u.id}">${u.nombre_completo} (${u.rol})</option>`;
-            });
+            globalUsuarios.filter(u => u.rol !== 'admin').forEach(u => { select.innerHTML += `<option value="${u.id}">${u.nombre_completo} (${u.rol})</option>`; });
         }
 
         async function asignarTareaMultiple() {
@@ -660,7 +780,6 @@
             const desc = document.getElementById('asignar-desc').value.trim();
 
             if (seleccionados.length === 0 || !desc) { alert("Selecciona al menos un usuario y escribe la tarea."); return; }
-            
             try {
                 for(let id of seleccionados) {
                     await fetch(`${API_URL}/api/usuarios/${id}/tarea`, {
@@ -675,12 +794,11 @@
             } catch (err) { alert("Error asignando tareas."); }
         }
 
-        // --- PRUEBAS FOTOGRÁFICAS (ACTUALIZADO: VER Y DESCARGAR) ---
+        // --- PRUEBAS FOTOGRÁFICAS ---
         function abrirFotoAmpliada(src) {
             document.getElementById('img-ampliada').src = src;
             document.getElementById('modal-ver-foto').style.display = 'flex';
         }
-
         function renderizarFotos() {
             const contenedor = document.getElementById('contenedor-fotos');
             const qNombre = document.getElementById('filtro-foto-nombre').value.toLowerCase();
@@ -694,7 +812,6 @@
             filtradas.forEach(a => {
                 const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
                 const nombreArchivoDescarga = `Prueba_${a.nombre_completo.replace(/\s+/g, '_')}_${fechaFmt}.png`;
-
                 contenedor.innerHTML += `
                     <div class="foto-card">
                         <img src="${a.imagen_prueba}" alt="Prueba" title="Haz clic para ver en grande" onclick="abrirFotoAmpliada('${a.imagen_prueba}')">
@@ -722,84 +839,50 @@
                     </tr>`;
             });
         }
-
         function abrirModalEditar(id) {
-            const u = globalUsuarios.find(x => x.id === id);
-            if(!u) return;
-            document.getElementById('me-id').value = u.id;
-            document.getElementById('me-nombre').value = u.nombre_completo;
-            document.getElementById('me-tel').value = u.telefono || '';
-            document.getElementById('me-dir').value = u.direccion || '';
-            document.getElementById('me-rol').value = u.rol;
-            document.getElementById('modal-editar').style.display = 'flex';
+            const u = globalUsuarios.find(x => x.id === id); if(!u) return;
+            document.getElementById('me-id').value = u.id; document.getElementById('me-nombre').value = u.nombre_completo;
+            document.getElementById('me-tel').value = u.telefono || ''; document.getElementById('me-dir').value = u.direccion || '';
+            document.getElementById('me-rol').value = u.rol; document.getElementById('modal-editar').style.display = 'flex';
         }
         function cerrarModalEditar() { document.getElementById('modal-editar').style.display = 'none'; }
 
         async function guardarEdicionPerfil() {
             const id = document.getElementById('me-id').value;
-            const payload = {
-                nombre_completo: document.getElementById('me-nombre').value,
-                telefono: document.getElementById('me-tel').value,
-                direccion: document.getElementById('me-dir').value,
-                rol: document.getElementById('me-rol').value
-            };
-            try {
-                await fetch(`${API_URL}/api/usuarios/${id}`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-                });
-                alert("¡Perfil actualizado correctamente en la Base de Datos!");
-                cerrarModalEditar(); cargarDatosAdminBD();
-            } catch(e) { alert("Error al editar."); }
+            const payload = { nombre_completo: document.getElementById('me-nombre').value, telefono: document.getElementById('me-tel').value, direccion: document.getElementById('me-dir').value, rol: document.getElementById('me-rol').value };
+            try { await fetch(`${API_URL}/api/usuarios/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); alert("¡Perfil actualizado!"); cerrarModalEditar(); cargarDatosAdminBD(); } catch(e) { alert("Error al editar."); }
         }
-
         async function eliminarPerfil(id) {
             const pass = prompt("Acción Crítica: Ingrese la contraseña de Administrador para eliminar este perfil:");
             if (pass !== "ueb123456789") { alert("Contraseña incorrecta. Operación cancelada."); return; }
-            
-            try {
-                await fetch(`${API_URL}/api/usuarios/${id}`, { method: 'DELETE' });
-                alert("¡Perfil eliminado definitivamente del servidor!");
-                cargarDatosAdminBD();
-            } catch(e) { alert("Error al intentar eliminar el perfil."); }
+            try { await fetch(`${API_URL}/api/usuarios/${id}`, { method: 'DELETE' }); alert("¡Perfil eliminado!"); cargarDatosAdminBD(); } catch(e) { alert("Error al eliminar."); }
         }
-
 
         // --- VISTA RÁPIDA ---
         function renderizarVistaRapida() {
-            const tbodyBec = document.getElementById('tbody-becarios');
-            const tbodyVol = document.getElementById('tbody-voluntarios');
+            const tbodyBec = document.getElementById('tbody-becarios'); const tbodyVol = document.getElementById('tbody-voluntarios');
             tbodyBec.innerHTML = ''; tbodyVol.innerHTML = '';
             
             globalUsuarios.forEach(u => {
                 const turnoActivo = globalAsistencias.find(a => a.usuario_id === u.id && (!a.hora_salida || a.hora_salida === 'En turno'));
-                let horaIngresoText = "---";
-                let estadoBadge = `<span style="color:#e53e3e; font-weight:bold;">🔴 Desconectado</span>`;
-                
-                if (turnoActivo) {
-                    horaIngresoText = turnoActivo.hora_ingreso;
-                    estadoBadge = `<span style="color:#38a169; font-weight:bold;">🟢 En Turno</span>`;
-                }
+                let horaIngresoText = "---"; let estadoBadge = `<span style="color:#e53e3e; font-weight:bold;">🔴 Desconectado</span>`;
+                if (turnoActivo) { horaIngresoText = turnoActivo.hora_ingreso; estadoBadge = `<span style="color:#38a169; font-weight:bold;">🟢 En Turno</span>`; }
 
                 const row = `<tr><td>${u.nombre_completo}</td><td>${u.registro_universitario}</td><td>${u.tarea_actual || 'Sin asignar'}</td><td><strong>${horaIngresoText}</strong></td><td>${estadoBadge}</td></tr>`;
-                
-                if (u.rol === 'becario') tbodyBec.innerHTML += row;
-                else if (u.rol === 'voluntario') tbodyVol.innerHTML += row;
+                if (u.rol === 'becario') tbodyBec.innerHTML += row; else if (u.rol === 'voluntario') tbodyVol.innerHTML += row;
             });
             if (tbodyBec.innerHTML === '') tbodyBec.innerHTML = '<tr><td colspan="5" style="text-align:center;">Sin registros.</td></tr>';
             if (tbodyVol.innerHTML === '') tbodyVol.innerHTML = '<tr><td colspan="5" style="text-align:center;">Sin registros.</td></tr>';
         }
 
         function renderizarReportes() {
-            const tbRsu = document.getElementById('tbody-reportes-rsu');
-            const tbBec = document.getElementById('tbody-reportes-becarios');
+            const tbRsu = document.getElementById('tbody-reportes-rsu'); const tbBec = document.getElementById('tbody-reportes-becarios');
             tbRsu.innerHTML = ''; tbBec.innerHTML = '';
             globalAsistencias.forEach(a => {
-                const usuario = globalUsuarios.find(u => u.id === a.usuario_id);
-                if(!usuario) return;
+                const usuario = globalUsuarios.find(u => u.id === a.usuario_id); if(!usuario) return;
                 const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
                 const fila = `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.sector || 'N/A'}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td>${a.reporte_usuario || a.tarea_realizada || 'Sin reporte'}</td></tr>`;
-                if (usuario.rol === 'voluntario') tbRsu.innerHTML += fila;
-                else if (usuario.rol === 'becario') tbBec.innerHTML += fila;
+                if (usuario.rol === 'voluntario') tbRsu.innerHTML += fila; else if (usuario.rol === 'becario') tbBec.innerHTML += fila;
             });
             if (tbRsu.innerHTML === '') tbRsu.innerHTML = '<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>';
             if (tbBec.innerHTML === '') tbBec.innerHTML = '<tr><td colspan="6" style="text-align:center;">Vacio</td></tr>';
@@ -807,14 +890,13 @@
 
         function ejecutarBusquedaInfoPersonal() {
             const query = document.getElementById('busqueda-info').value.toLowerCase();
-            const contenedor = document.getElementById('contenedor-info-personal');
-            contenedor.innerHTML = '';
+            const contenedor = document.getElementById('contenedor-info-personal'); contenedor.innerHTML = '';
             const filtrados = globalUsuarios.filter(u => u.nombre_completo.toLowerCase().includes(query) || u.registro_universitario.includes(query));
             if (filtrados.length === 0) { contenedor.innerHTML = '<p>No se encontraron usuarios.</p>'; return; }
             filtrados.forEach(u => {
                 let minsTotal = 0;
                 globalAsistencias.forEach(a => { if (a.usuario_id === u.id) { minsTotal += calcularDiferenciaHoras(a.hora_ingreso, a.hora_salida).mins; } });
-                const html = `
+                contenedor.innerHTML += `
                 <div style="background: white; border: 1px solid #dfe1e6; border-left: 5px solid #1a365d; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
                     <h3 style="color: #1a365d;">${u.nombre_completo} <span style="font-size:14px; color:gray;">(${u.rol.toUpperCase()})</span></h3>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px; font-size:14px;">
@@ -822,49 +904,35 @@
                         <p><strong>Correo Inst:</strong> ${u.correo_inst || 'N/A'}</p><p><strong>Correo Pers:</strong> ${u.correo_pers || 'N/A'}</p>
                         <p><strong>Teléfono:</strong> ${u.telefono || 'N/A'}</p><p><strong>Dirección:</strong> ${u.direccion || 'N/A'}</p>
                     </div>
-                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                        <strong style="color: #319795; font-size: 16px;">🔥 Total Horas RSU: ${minutosATexto(minsTotal)}</strong>
-                    </div>
+                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;"><strong style="color: #319795; font-size: 16px;">🔥 Total Horas RSU: ${minutosATexto(minsTotal)}</strong></div>
                 </div>`;
-                contenedor.innerHTML += html;
             });
         }
 
         function ejecutarBusquedaHoras() {
-            const qNombre = document.getElementById('busqueda-horas-nombre').value.toLowerCase();
-            const qFecha = document.getElementById('busqueda-horas-fecha').value;
-            const tb = document.getElementById('tbody-horas');
-            const tarjeta = document.getElementById('mini-tarjeta-rsu');
-            tb.innerHTML = '';
+            const qNombre = document.getElementById('busqueda-horas-nombre').value.toLowerCase(); const qFecha = document.getElementById('busqueda-horas-fecha').value;
+            const tb = document.getElementById('tbody-horas'); const tarjeta = document.getElementById('mini-tarjeta-rsu'); tb.innerHTML = '';
             
             let filtradas = globalAsistencias;
             if (qFecha) filtradas = filtradas.filter(a => a.fecha && a.fecha.startsWith(qFecha));
             if (qNombre) filtradas = filtradas.filter(a => a.nombre_completo.toLowerCase().includes(qNombre) || (a.registro_universitario && a.registro_universitario.includes(qNombre)));
 
             if (qNombre.length > 2 && filtradas.length > 0) {
-                const idBuscado = filtradas[0].usuario_id;
-                let minsAcumulados = 0;
+                const idBuscado = filtradas[0].usuario_id; let minsAcumulados = 0;
                 globalAsistencias.forEach(a => { if (a.usuario_id === idBuscado) minsAcumulados += calcularDiferenciaHoras(a.hora_ingreso, a.hora_salida).mins; });
-                document.getElementById('rsu-nombre-resumen').innerText = filtradas[0].nombre_completo;
-                document.getElementById('rsu-total-resumen').innerText = minutosATexto(minsAcumulados);
-                tarjeta.style.display = 'block';
+                document.getElementById('rsu-nombre-resumen').innerText = filtradas[0].nombre_completo; document.getElementById('rsu-total-resumen').innerText = minutosATexto(minsAcumulados); tarjeta.style.display = 'block';
             } else { tarjeta.style.display = 'none'; }
 
             filtradas.forEach(a => {
-                const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
-                const calculo = calcularDiferenciaHoras(a.hora_ingreso, a.hora_salida);
-                const fila = `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td><strong>${calculo.texto}</strong></td></tr>`;
-                tb.innerHTML += fila;
+                const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A'; const calculo = calcularDiferenciaHoras(a.hora_ingreso, a.hora_salida);
+                tb.innerHTML += `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td><strong>${calculo.texto}</strong></td></tr>`;
             });
             if (tb.innerHTML === '') tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay registros.</td></tr>';
         }
 
         function filtrarHistorial() {
-            const qNombre = document.getElementById('historial-nombre').value.toLowerCase();
-            const qDia = document.getElementById('historial-dia').value;
-            const qMes = document.getElementById('historial-mes').value;
-            const tb = document.getElementById('tbody-historial');
-            tb.innerHTML = '';
+            const qNombre = document.getElementById('historial-nombre').value.toLowerCase(); const qDia = document.getElementById('historial-dia').value; const qMes = document.getElementById('historial-mes').value;
+            const tb = document.getElementById('tbody-historial'); tb.innerHTML = '';
 
             let filtradas = globalAsistencias;
             if (qNombre) filtradas = filtradas.filter(a => a.nombre_completo.toLowerCase().includes(qNombre) || (a.registro_universitario && a.registro_universitario.includes(qNombre)));
@@ -873,8 +941,7 @@
 
             filtradas.forEach(a => {
                 const fechaFmt = a.fecha ? a.fecha.split('T')[0] : 'N/A';
-                const fila = `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.registro_universitario || 'N/A'}</td><td>${a.sector || 'N/A'}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td>${a.reporte_usuario || a.tarea_realizada || 'Sin reporte'}</td></tr>`;
-                tb.innerHTML += fila;
+                tb.innerHTML += `<tr><td>${fechaFmt}</td><td>${a.nombre_completo}</td><td>${a.registro_universitario || 'N/A'}</td><td>${a.sector || 'N/A'}</td><td>${a.hora_ingreso}</td><td>${a.hora_salida || 'En turno'}</td><td>${a.reporte_usuario || a.tarea_realizada || 'Sin reporte'}</td></tr>`;
             });
             if (tb.innerHTML === '') tb.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay resultados en el historial.</td></tr>';
         }
@@ -887,28 +954,15 @@
         }
 
         async function guardarUsuarioBD() {
-            const regUniv = document.getElementById('nu-registro').value.trim();
-            const correoInput = document.getElementById('nu-correo-inst').value.trim();
-            const correoFinal = correoInput !== '' ? correoInput : `${regUniv}@ueb.edu.bo`;
-            const payload = {
-                rol: document.getElementById('nu-rango').value, registro_universitario: regUniv, correo_inst: correoFinal, nombre_completo: document.getElementById('nu-nombre').value.trim(),
-                ci: document.getElementById('nu-ci').value.trim(), telefono: document.getElementById('nu-tel-personal').value.trim(), telefono_ref: document.getElementById('nu-tel-ref').value.trim(),
-                parentesco_ref: document.getElementById('nu-parentesco-ref').value.trim(), correo_pers: document.getElementById('nu-correo-pers').value.trim(), direccion: document.getElementById('nu-vivienda').value.trim(),
-                sangre: document.getElementById('nu-sangre').value.trim(), genero: document.getElementById('nu-genero').value.trim(), fecha_nacimiento: document.getElementById('nu-fecha-nac').value || null
-            };
-
+            const regUniv = document.getElementById('nu-registro').value.trim(); const correoInput = document.getElementById('nu-correo-inst').value.trim(); const correoFinal = correoInput !== '' ? correoInput : `${regUniv}@ueb.edu.bo`;
+            const payload = { rol: document.getElementById('nu-rango').value, registro_universitario: regUniv, correo_inst: correoFinal, nombre_completo: document.getElementById('nu-nombre').value.trim(), ci: document.getElementById('nu-ci').value.trim(), telefono: document.getElementById('nu-tel-personal').value.trim(), telefono_ref: document.getElementById('nu-tel-ref').value.trim(), parentesco_ref: document.getElementById('nu-parentesco-ref').value.trim(), correo_pers: document.getElementById('nu-correo-pers').value.trim(), direccion: document.getElementById('nu-vivienda').value.trim(), sangre: document.getElementById('nu-sangre').value.trim(), genero: document.getElementById('nu-genero').value.trim(), fecha_nacimiento: document.getElementById('nu-fecha-nac').value || null };
             if (!payload.registro_universitario || !payload.nombre_completo) { alert("Por favor, llene al menos Nombre y Registro Universitario."); return; }
-
             try {
                 const res = await fetch(`${API_URL}/api/usuarios`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (res.ok) {
-                    alert(`¡Usuario creado exitosamente!\n\nProporciona estas credenciales al usuario para que inicie sesión:\n📧 Correo Institucional: ${correoFinal}\n🔑 Contraseña (Registro): ${regUniv}`);
-                    document.querySelectorAll('.form-grid input').forEach(input => input.value = ''); cargarDatosAdminBD();
-                } else { const errorBD = await res.json(); alert(`Error de Base de Datos:\n${errorBD.error || 'Datos duplicados.'}`); }
+                if (res.ok) { alert(`¡Usuario creado exitosamente!\n\nProporciona estas credenciales al usuario para que inicie sesión:\n📧 Correo Institucional: ${correoFinal}\n🔑 Contraseña (Registro): ${regUniv}`); document.querySelectorAll('.form-grid input').forEach(input => input.value = ''); cargarDatosAdminBD(); } else { const errorBD = await res.json(); alert(`Error de Base de Datos:\n${errorBD.error || 'Datos duplicados.'}`); }
             } catch (err) { alert("Error servidor."); }
         }
 
-        let mapaAd;
         function cambiarVista(idVista, btnElement) {
             document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.a-menu li').forEach(el => el.classList.remove('active'));
@@ -916,10 +970,8 @@
             btnElement.classList.add('active');
             document.getElementById('mobile-title').innerText = btnElement.innerText.replace(/[^\w\s]/gi, '').trim();
             document.getElementById('sidebar').classList.remove('open');
-            if(idVista === 'vista-mapa') {
-                if(!mapaAd) { mapaAd = L.map('mapa-container').setView([-17.835, -63.2045], 16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaAd); }
-                setTimeout(() => { mapaAd.invalidateSize(); }, 200);
-            }
+            
+            if(idVista === 'vista-mapa') { renderizarMapaAdmin(); }
         }
     </script>
 </body>
