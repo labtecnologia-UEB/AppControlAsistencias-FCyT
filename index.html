@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Integrado FABLAB - UEB</title>
+    <!-- Leaflet para Mapas -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- HTML2PDF para reportes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
@@ -77,7 +79,6 @@
         .form-group label { font-size: 13px; color: #4a5568; margin-bottom: 5px; font-weight: 600; }
         .form-group input, .form-group select { padding: 10px; border: 1px solid #dfe1e6; border-radius: 6px; outline: none; }
         
-        #mapa-container { width: 100%; height: 60vh; border-radius: 8px; border: 1px solid #dfe1e6; }
         .mini-card-rsu { background: #ebf8fa; border: 2px solid #319795; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 16px; color: #2d3748; display: none; }
         .mini-card-rsu strong { color: #319795; font-size: 18px; }
 
@@ -309,7 +310,7 @@
                 <section id="vista-mapa" class="admin-view hidden">
                     <div class="card">
                         <h2 class="card-title">Rastreo Georreferenciado (Campus UEB)</h2>
-                        <p style="margin-bottom:10px; color:#718096;">Se muestran los estudiantes con turno activo. El mapa se centrará automáticamente en ellos.</p>
+                        <p style="margin-bottom:10px; color:#718096;">Se muestran los estudiantes con turno activo. El mapa se actualiza y centra automáticamente.</p>
                         <div id="mapa-container" style="height: 60vh; width: 100%; border-radius: 8px; border: 1px solid #dfe1e6;"></div>
                     </div>
                 </section>
@@ -418,21 +419,13 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN LOCAL
+        // ================= CONEXIÓN PRINCIPAL =================
         const API_URL = 'https://apifablabueb.loca.lt';
         let usuarioSesion = null;
         let asistenciaActualId = null;
 
         let globalUsuarios = [];
         let globalAsistencias = [];
-
-        // Solución universal para que los iconos de Leaflet no se hagan invisibles en GitHub
-        delete L.Icon.Default.prototype._getIconUrl;
-        L.Icon.Default.mergeOptions({
-            iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        });
 
         // ======== MEMORIA DE SESIÓN AUTOMÁTICA ========
         window.onload = () => {
@@ -460,7 +453,6 @@
                 const res = await fetch(`${API_URL}/api/asistencias_globales`);
                 const todas = await res.json();
                 
-                // Calculamos la fecha local exacta para evitar problemas de zona horaria
                 const localNow = new Date();
                 const year = localNow.getFullYear();
                 const month = String(localNow.getMonth() + 1).padStart(2, '0');
@@ -476,9 +468,7 @@
                     const badge = document.getElementById('u-badge-estado');
                     badge.textContent = '🟢 Turno Activo'; badge.style.background = '#c6f6d5'; badge.style.color = '#22543d';
                 }
-            } catch (e) {
-                console.log("No se pudo verificar el turno anterior.");
-            }
+            } catch (e) { console.log("No se pudo verificar el turno anterior."); }
         }
 
         function leerArchivoComoBase64(file) {
@@ -657,10 +647,6 @@
                 renderizarVistaRapida(); renderizarReportes(); ejecutarBusquedaHoras(); 
                 filtrarHistorial(); ejecutarBusquedaInfoPersonal(); renderizarSelectAsignacion();
                 renderizarTareasVigentes(); renderizarFotos(); renderizarPerfiles();
-                
-                if(document.getElementById('vista-mapa').classList.contains('hidden') === false) {
-                    renderizarMapaAdmin();
-                }
             } catch (err) { console.error("Error al cargar datos:", err); }
         }
 
@@ -674,46 +660,64 @@
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaAd);
             }
             
-            // Usamos setTimeout para esperar a que el contenedor DIV se estire completamente
             setTimeout(() => { 
                 mapaAd.invalidateSize(); 
 
-                // Limpiar marcadores viejos
                 marcadoresAdmin.forEach(m => mapaAd.removeLayer(m));
                 marcadoresAdmin = [];
 
-                // Solo estudiantes activos que sí mandaron coordenadas (lat y lng diferentes de null)
                 const activos = globalAsistencias.filter(a => (!a.hora_salida || a.hora_salida === 'En turno') && a.latitud != null && a.longitud != null);
                 const agrupados = {};
 
-                // Agrupamos a los que hicieron click en el mismo lugar exacto
                 activos.forEach(a => {
                     const clave = `${a.latitud},${a.longitud}`;
                     if (!agrupados[clave]) agrupados[clave] = [];
                     agrupados[clave].push(a);
                 });
 
-                // Dibujamos el puntero
+                // Icono infalible de Emoji (Jamás será invisible en GitHub)
+                const iconoMarcador = L.divIcon({
+                    className: 'marcador-emoji',
+                    html: '<div style="font-size: 32px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); cursor: pointer;">📍</div>',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32],
+                    popupAnchor: [0, -32]
+                });
+
                 for (const clave in agrupados) {
                     const usuarios = agrupados[clave];
                     const [lat, lng] = clave.split(',');
                     
                     let nombresHTML = usuarios.map(u => `• <b>${u.nombre_completo}</b> <i>(${u.sector || 'N/A'})</i>`).join('<br>');
-                    let titulo = usuarios.length > 1 ? `📍 ${usuarios.length} Personas en este punto:` : `📍 Usuario en turno:`;
+                    let titulo = usuarios.length > 1 ? `📍 ${usuarios.length} Personas aquí:` : `📍 Usuario en este punto:`;
 
-                    const marker = L.marker([parseFloat(lat), parseFloat(lng)]).addTo(mapaAd)
+                    const marker = L.marker([parseFloat(lat), parseFloat(lng)], {icon: iconoMarcador}).addTo(mapaAd)
                         .bindPopup(`<div style="font-size:14px; min-width:180px;"><b>${titulo}</b><br><div style="margin-top:8px;">${nombresHTML}</div></div>`);
                     
                     marcadoresAdmin.push(marker);
                 }
 
-                // Hacer ZOOM AUTOMÁTICO hacia donde están los marcadores
                 if (marcadoresAdmin.length > 0) {
                     const group = new L.featureGroup(marcadoresAdmin);
                     mapaAd.fitBounds(group.getBounds(), { padding: [30, 30], maxZoom: 18 });
                 }
 
             }, 300);
+        }
+
+        // --- MANEJO DE VISTAS (AHORA ACTUALIZA DATOS EN VIVO) ---
+        async function cambiarVista(idVista, btnElement) {
+            document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.a-menu li').forEach(el => el.classList.remove('active'));
+            document.getElementById(idVista).classList.remove('hidden');
+            btnElement.classList.add('active');
+            document.getElementById('mobile-title').innerText = btnElement.innerText.replace(/[^\w\s]/gi, '').trim();
+            document.getElementById('sidebar').classList.remove('open');
+            
+            if(idVista === 'vista-mapa') { 
+                await cargarDatosAdminBD();
+                renderizarMapaAdmin(); 
+            }
         }
 
         // --- TAREAS VIGENTES ---
@@ -984,17 +988,6 @@
                 const res = await fetch(`${API_URL}/api/usuarios`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (res.ok) { alert(`¡Usuario creado exitosamente!\n\nProporciona estas credenciales al usuario para que inicie sesión:\n📧 Correo Institucional: ${correoFinal}\n🔑 Contraseña (Registro): ${regUniv}`); document.querySelectorAll('.form-grid input').forEach(input => input.value = ''); cargarDatosAdminBD(); } else { const errorBD = await res.json(); alert(`Error de Base de Datos:\n${errorBD.error || 'Datos duplicados.'}`); }
             } catch (err) { alert("Error servidor."); }
-        }
-
-        function cambiarVista(idVista, btnElement) {
-            document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.a-menu li').forEach(el => el.classList.remove('active'));
-            document.getElementById(idVista).classList.remove('hidden');
-            btnElement.classList.add('active');
-            document.getElementById('mobile-title').innerText = btnElement.innerText.replace(/[^\w\s]/gi, '').trim();
-            document.getElementById('sidebar').classList.remove('open');
-            
-            if(idVista === 'vista-mapa') { renderizarMapaAdmin(); }
         }
     </script>
 </body>
